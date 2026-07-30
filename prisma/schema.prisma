@@ -63,3 +63,42 @@ model Company {
   entityListStatus String?
   aliases          String[]
 }
+
+enum PolicyStatus {
+  ACTIVE
+  RESCINDED
+  CONTESTED
+  SUPERSEDED
+}
+
+model Policy {
+  id            String         @id @default(uuid())
+  title         String
+  summary       String?
+  controlNumber String?
+  effectiveDate DateTime?
+  status        PolicyStatus   @default(ACTIVE)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  sources       PolicySource[]
+  documents     Document[]
+}
+
+model PolicySource {
+  id            String    @id @default(uuid())
+  policyId      String
+  policy        Policy    @relation(fields: [policyId], references: [id])
+  sourceName    String
+  sourceUrl     String?
+  publishedDate DateTime?
+}
+
+model Document {
+  id            String    @id @default(uuid())
+  policyId      String
+  policy        Policy    @relation(fields: [policyId], references: [id])
+  title         String
+  url           String?
+  documentType  String
+  publishedDate DateTime?
+}
