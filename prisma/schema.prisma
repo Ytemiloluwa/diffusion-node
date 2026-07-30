@@ -48,11 +48,12 @@ model Technology {
 }
 
 model Country {
-  id                 String    @id @default(uuid())
+  id                 String         @id @default(uuid())
   name               String
-  isoCode            String    @unique
+  isoCode            String         @unique
   tierClassification String?
   companies          Company[]
+  jurisdictions      Jurisdiction[]
 }
 
 model Company {
@@ -82,6 +83,7 @@ model Policy {
   updatedAt     DateTime       @updatedAt
   sources       PolicySource[]
   documents     Document[]
+  jurisdictions Jurisdiction[]
 }
 
 model PolicySource {
@@ -101,4 +103,21 @@ model Document {
   url           String?
   documentType  String
   publishedDate DateTime?
+}
+
+model RestrictionType {
+  id            String         @id @default(uuid())
+  name          String
+  description   String?
+  jurisdictions Jurisdiction[]
+}
+
+model Jurisdiction {
+  id                String          @id @default(uuid())
+  policyId          String
+  policy            Policy          @relation(fields: [policyId], references: [id])
+  countryId         String
+  country           Country         @relation(fields: [countryId], references: [id])
+  restrictionTypeId String
+  restrictionType   RestrictionType @relation(fields: [restrictionTypeId], references: [id])
 }
