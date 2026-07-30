@@ -46,3 +46,20 @@ model Technology {
   categoryId  String
   category    TechnologyCategory @relation(fields: [categoryId], references: [id])
 }
+
+model Country {
+  id                 String    @id @default(uuid())
+  name               String
+  isoCode            String    @unique
+  tierClassification String?
+  companies          Company[]
+}
+
+model Company {
+  id               String   @id @default(uuid())
+  name             String
+  hqCountryId      String
+  hqCountry        Country  @relation(fields: [hqCountryId], references: [id])
+  entityListStatus String?
+  aliases          String[]
+}
