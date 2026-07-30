@@ -31,3 +31,18 @@ model ApiKey {
   revokedAt  DateTime?
   createdAt  DateTime  @default(now())
 }
+
+model TechnologyCategory {
+  id           String       @id @default(uuid())
+  name         String
+  isActiveInV1 Boolean      @default(false)
+  technologies Technology[]
+}
+
+model Technology {
+  id          String             @id @default(uuid())
+  name        String
+  description String?
+  categoryId  String
+  category    TechnologyCategory @relation(fields: [categoryId], references: [id])
+}
