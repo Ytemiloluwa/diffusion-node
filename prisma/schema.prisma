@@ -1,0 +1,143 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  DEVELOPER
+}
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String
+  role         Role      @default(DEVELOPER)
+  createdAt    DateTime  @default(now())
+  apiKeys      ApiKey[]
+}
+
+model ApiKey {
+  id         String    @id @default(uuid())
+  key        String    @unique
+  userId     String
+  user       User      @relation(fields: [userId], references: [id])
+  label      String
+  lastUsedAt DateTime?
+  revokedAt  DateTime?
+  createdAt  DateTime  @default(now())
+}
+
+model TechnologyCategory {
+  id           String       @id @default(uuid())
+  name         String
+  isActiveInV1 Boolean      @default(false)
+  technologies Technology[]
+}
+
+model Technology {
+  id          String             @id @default(uuid())
+  name        String
+  description String?
+  categoryId  String
+  category    TechnologyCategory @relation(fields: [categoryId], references: [id])
+}
+
+model Country {
+  id                 String         @id @default(uuid())
+  name               String
+  isoCode            String         @unique
+  tierClassification String?
+  companies          Company[]
+  jurisdictions      Jurisdiction[]
+}
+
+model Company {
+  id               String   @id @default(uuid())
+  name             String
+  hqCountryId      String
+  hqCountry        Country  @relation(fields: [hqCountryId], references: [id])
+  entityListStatus String?
+  aliases          String[]
+}
+
+enum PolicyStatus {
+  ACTIVE
+  RESCINDED
+  CONTESTED
+  SUPERSEDED
+}
+
+model Policy {
+  id             String           @id @default(uuid())
+  title          String
+  summary        String?
+  controlNumber  String?
+  effectiveDate  DateTime?
+  status         PolicyStatus     @default(ACTIVE)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  sources        PolicySource[]
+  documents      Document[]
+  jurisdictions  Jurisdiction[]
+  revisions      PolicyRevision[]
+  timelineEvents TimelineEvent[]
+}
+
+model PolicySource {
+  id            String    @id @default(uuid())
+  policyId      String
+  policy        Policy    @relation(fields: [policyId], references: [id])
+  sourceName    String
+  sourceUrl     String?
+  publishedDate DateTime?
+}
+
+model Document {
+  id            String    @id @default(uuid())
+  policyId      String
+  policy        Policy    @relation(fields: [policyId], references: [id])
+  title         String
+  url           String?
+  documentType  String
+  publishedDate DateTime?
+}
+
+model RestrictionType {
+  id            String         @id @default(uuid())
+  name          String
+  description   String?
+  jurisdictions Jurisdiction[]
+}
+
+model Jurisdiction {
+  id                String          @id @default(uuid())
+  policyId          String
+  policy            Policy          @relation(fields: [policyId], references: [id])
+  countryId         String
+  country           Country         @relation(fields: [countryId], references: [id])
+  restrictionTypeId String
+  restrictionType   RestrictionType @relation(fields: [restrictionTypeId], references: [id])
+}
+
+model PolicyRevision {
+  id             String        @id @default(uuid())
+  policyId       String
+  policy         Policy        @relation(fields: [policyId], references: [id])
+  revisionDate   DateTime
+  changeSummary  String?
+  previousStatus PolicyStatus?
+  newStatus      PolicyStatus?
+}
+
+model TimelineEvent {
+  id          String   @id @default(uuid())
+  policyId    String?
+  policy      Policy?  @relation(fields: [policyId], references: [id])
+  eventDate   DateTime
+  eventType   String
+  description String?
+}
