@@ -1,3 +1,5 @@
+/// <reference types="node" />
+
 import { PrismaClient, Role, PolicyStatus } from '@prisma/client';
 const prisma = new PrismaClient();
 
@@ -37,6 +39,21 @@ async function main() {
     }
   });
 
+  const semiconductorCategory = await prisma.technologyCategory.create({
+    data: {
+      name: 'Semiconductors',
+      isActiveInV1: true,
+    },
+  });
+
+  const semiconductorManufacturing = await prisma.technology.create({
+    data: {
+      name: 'Semiconductor Manufacturing Equipment',
+      description: 'Advanced equipment used to manufacture leading-edge semiconductors.',
+      categoryId: semiconductorCategory.id,
+    },
+  });
+
   // 3. Policy, Jurisdiction, and Timeline
   const restriction = await prisma.restrictionType.create({
     data: {
@@ -70,6 +87,20 @@ async function main() {
       eventType: 'Initial Publication',
       description: 'Policy was officially published.'
     }
+  });
+
+  await prisma.policyTechnology.create({
+    data: {
+      policyId: policy.id,
+      technologyId: semiconductorManufacturing.id,
+    },
+  });
+
+  await prisma.policyCompany.create({
+    data: {
+      policyId: policy.id,
+      companyId: company.id,
+    },
   });
 
   console.log('Created policy, jurisdiction, and timeline data.');
