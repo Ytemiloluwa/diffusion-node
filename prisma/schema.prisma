@@ -12,11 +12,11 @@ enum Role {
 }
 
 model User {
-  id           String    @id @default(uuid())
-  email        String    @unique
+  id           String   @id @default(uuid())
+  email        String   @unique
   passwordHash String
-  role         Role      @default(DEVELOPER)
-  createdAt    DateTime  @default(now())
+  role         Role     @default(DEVELOPER)
+  createdAt    DateTime @default(now())
   apiKeys      ApiKey[]
 }
 
@@ -44,6 +44,7 @@ model Technology {
   description String?
   categoryId  String
   category    TechnologyCategory @relation(fields: [categoryId], references: [id])
+  policies    PolicyTechnology[]
 }
 
 model Country {
@@ -56,12 +57,13 @@ model Country {
 }
 
 model Company {
-  id               String   @id @default(uuid())
+  id               String          @id @default(uuid())
   name             String
   hqCountryId      String
-  hqCountry        Country  @relation(fields: [hqCountryId], references: [id])
+  hqCountry        Country         @relation(fields: [hqCountryId], references: [id])
   entityListStatus String?
   aliases          String[]
+  policies         PolicyCompany[]
 }
 
 enum PolicyStatus {
@@ -72,19 +74,43 @@ enum PolicyStatus {
 }
 
 model Policy {
-  id             String           @id @default(uuid())
+  id             String             @id @default(uuid())
   title          String
   summary        String?
   controlNumber  String?
   effectiveDate  DateTime?
-  status         PolicyStatus     @default(ACTIVE)
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
+  status         PolicyStatus       @default(ACTIVE)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
   sources        PolicySource[]
   documents      Document[]
   jurisdictions  Jurisdiction[]
+  technologies   PolicyTechnology[]
+  companies      PolicyCompany[]
   revisions      PolicyRevision[]
   timelineEvents TimelineEvent[]
+}
+
+model PolicyTechnology {
+  id           String     @id @default(uuid())
+  policyId     String
+  policy       Policy     @relation(fields: [policyId], references: [id], onDelete: Cascade)
+  technologyId String
+  technology   Technology @relation(fields: [technologyId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+
+  @@unique([policyId, technologyId])
+}
+
+model PolicyCompany {
+  id        String   @id @default(uuid())
+  policyId  String
+  policy    Policy   @relation(fields: [policyId], references: [id], onDelete: Cascade)
+  companyId String
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([policyId, companyId])
 }
 
 model PolicySource {
