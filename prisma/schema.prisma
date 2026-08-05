@@ -71,6 +71,7 @@ enum PolicyStatus {
   RESCINDED
   CONTESTED
   SUPERSEDED
+  DRAFT
 }
 
 model Policy {
@@ -166,4 +167,6 @@ model TimelineEvent {
   eventDate   DateTime
   eventType   String
   description String?
+  sourceName  String?
+  sourceUrl   String?
 }

@@ -106,6 +106,8 @@ export const getPolicyTimeline = async (id: string) => {
             description: item.description,
             eventType: item.eventType,
             id: item.id,
+            sourceName: item.sourceName,
+            sourceUrl: item.sourceUrl,
             type: 'event',
           },
     )
