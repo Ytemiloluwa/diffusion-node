@@ -39,7 +39,10 @@ const mockPrisma = {
     create: jest.fn<(args: MockApiKeyCreateArgs) => Promise<MockApiKeyRecord>>(),
   },
   user: {
-    create: jest.fn<(args: MockUserCreateArgs) => Promise<Required<Omit<MockUserRecord, 'passwordHash'>>>>(),
+    create:
+      jest.fn<
+        (args: MockUserCreateArgs) => Promise<Required<Omit<MockUserRecord, 'passwordHash'>>>
+      >(),
     findUnique: jest.fn<(args: unknown) => Promise<MockUserRecord | null>>(),
   },
 };
@@ -49,7 +52,8 @@ jest.mock('../src/db/prisma', () => ({
   default: mockPrisma,
 }));
 
-const { issueToken, register } = require('../src/controllers/authController');
+const { issueToken, refreshAccessToken, register } = require('../src/controllers/authController');
+const { signRefreshToken, verifyAccessToken } = require('../src/utils/jwt');
 
 describe('auth controller', () => {
   beforeEach(() => {
@@ -105,5 +109,26 @@ describe('auth controller', () => {
     expect(response.apiKey.key).toMatch(/^dn_/);
     expect(createCall.data.key).not.toBe(response.apiKey.key);
     expect(createCall.data.label).toBe('Local dev');
+  });
+
+  it('refreshes an access token from a valid refresh token', async () => {
+    const user = {
+      createdAt: new Date('2026-08-01T00:00:00.000Z'),
+      email: 'dev@example.com',
+      id: 'user-id',
+      passwordHash: 'stored-hash',
+      role: Role.DEVELOPER,
+    };
+    mockPrisma.user.findUnique.mockResolvedValue(user);
+
+    const refreshToken = signRefreshToken(user);
+    const response = await refreshAccessToken(refreshToken);
+
+    expect(mockPrisma.user.findUnique).toHaveBeenCalledWith({ where: { id: 'user-id' } });
+    expect(verifyAccessToken(response.accessToken)).toMatchObject({
+      email: 'dev@example.com',
+      role: Role.DEVELOPER,
+      sub: 'user-id',
+    });
   });
 });
