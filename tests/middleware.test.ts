@@ -124,7 +124,14 @@ describe('rate limiter middleware', () => {
     });
 
     await request(app).get('/limited').expect(200);
-    await request(app).get('/limited').expect(429);
+    const response = await request(app).get('/limited').expect(429);
+
+    expect(response.body).toMatchObject({
+      error: {
+        code: 'RATE_LIMIT_EXCEEDED',
+        message: 'Too many requests. Please try again later.',
+      },
+    });
 
     jest.dontMock('../src/config/env');
     jest.resetModules();
