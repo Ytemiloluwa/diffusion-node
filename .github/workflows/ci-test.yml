@@ -1,0 +1,59 @@
+name: Test
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+env:
+  HUSKY: 0
+  DATABASE_URL: postgresql://postgres:postgres@localhost:5432/diffusion_ci?schema=public
+  JWT_REFRESH_SECRET: ci-refresh-secret
+  JWT_SECRET: ci-access-secret
+  RATE_LIMIT_MAX: 1000
+  RATE_LIMIT_WINDOW_MS: 60000
+
+jobs:
+  test:
+    name: Test with Postgres
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: diffusion_ci
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d diffusion_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          cache: npm
+          node-version-file: .nvmrc
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npm run prisma:generate
+
+      - name: Apply database migrations
+        run: npx prisma migrate deploy
+
+      - name: Run test suite with coverage
+        run: npm test -- --coverage
