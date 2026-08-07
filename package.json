@@ -2,10 +2,22 @@
   "name": "diffusion-node",
   "version": "1.0.0",
   "description": "",
+  "private": true,
+  "engines": {
+    "node": ">=20.9.0"
+  },
   "main": "index.js",
+  "workspaces": [
+    "frontend"
+  ],
   "scripts": {
     "build": "tsc -p .",
+    "build:all": "npm run build && npm run frontend:build",
     "dev": "nodemon --exec ts-node src/server.ts",
+    "frontend:build": "npm run build -w frontend",
+    "frontend:dev": "npm run dev -w frontend",
+    "frontend:lint": "npm run lint -w frontend",
+    "frontend:start": "npm run start -w frontend",
     "prisma:generate": "prisma generate",
     "prisma:validate": "prisma validate",
     "start": "node dist/server.js",
@@ -32,7 +44,7 @@
     "@typescript-eslint/eslint-plugin": "^8.65.0",
     "@typescript-eslint/parser": "^8.65.0",
     "esbuild": "^0.28.1",
-    "eslint": "^10.8.0",
+    "eslint": "^9.39.5",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.6",
     "husky": "^9.1.7",
