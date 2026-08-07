@@ -78,12 +78,6 @@ const paginatedResponses = {
   500: internalErrorResponse,
 };
 
-const standardApiResponses = {
-  400: validationErrorResponse,
-  429: rateLimitResponse,
-  500: internalErrorResponse,
-};
-
 export const openApiSpec = swaggerJsdoc({
   apis: [],
   definition: {
