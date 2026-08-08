@@ -1,7 +1,7 @@
 import { ArrowRight, CalendarDays, ExternalLink, FileText, ShieldAlert } from 'lucide-react';
 import { Badge, Button, Panel } from '@/components/atoms';
 import { PolicyCard } from '@/components/molecules';
-import { DashboardShell } from '@/components/organisms';
+import { DashboardShell, DataTable, type DataTableColumn } from '@/components/organisms';
 
 const metrics = [
   { label: 'Tracked policies', value: '128', detail: '+12 this month', tone: 'emerald' },
@@ -36,6 +36,112 @@ const countryExposure = [
   { country: 'Russia', count: 22, level: 'High' },
   { country: 'Iran', count: 14, level: 'Medium' },
   { country: 'North Korea', count: 9, level: 'Medium' },
+];
+
+type PolicyRow = {
+  companies: number;
+  effectiveDate: string;
+  id: string;
+  policy: string;
+  risk: 'High' | 'Medium';
+  source: string;
+  status: 'Active' | 'Contested' | 'Draft';
+  technologies: string;
+};
+
+const policyRows: PolicyRow[] = [
+  {
+    companies: 428,
+    effectiveDate: 'May 20, 2025',
+    id: 'advanced-computing-controls',
+    policy: 'Advanced Computing Export Controls',
+    risk: 'High',
+    source: 'Federal Register',
+    status: 'Active',
+    technologies: 'AI Accelerators, HBM',
+  },
+  {
+    companies: 312,
+    effectiveDate: 'May 12, 2025',
+    id: 'entity-list-additions',
+    policy: 'BIS Entity List Additions',
+    risk: 'High',
+    source: 'BIS Entity List',
+    status: 'Active',
+    technologies: 'Integrated Circuits',
+  },
+  {
+    companies: 267,
+    effectiveDate: 'May 6, 2025',
+    id: 'license-review-revision',
+    policy: 'License Review Policy Revision',
+    risk: 'Medium',
+    source: 'AI Diffusion Framework',
+    status: 'Contested',
+    technologies: 'EDA Software',
+  },
+  {
+    companies: 198,
+    effectiveDate: 'Apr 28, 2025',
+    id: 'reporting-non-enforcement',
+    policy: 'Temporary Non-Enforcement Notice',
+    risk: 'Medium',
+    source: 'BIS Notice',
+    status: 'Draft',
+    technologies: 'Advanced Computing',
+  },
+];
+
+const policyColumns: DataTableColumn<PolicyRow>[] = [
+  {
+    cell: (row) => (
+      <div>
+        <p className="font-semibold text-slate-950">{row.policy}</p>
+        <p className="mt-1 text-xs text-slate-500">{row.source}</p>
+      </div>
+    ),
+    header: 'Policy',
+    id: 'policy',
+    isRowHeader: true,
+    width: '30%',
+  },
+  {
+    cell: (row) => row.technologies,
+    header: 'Technologies',
+    id: 'technologies',
+    width: '22%',
+  },
+  {
+    align: 'right',
+    cell: (row) => row.companies.toLocaleString(),
+    header: 'Companies',
+    id: 'companies',
+    width: '11%',
+  },
+  {
+    cell: (row) => <Badge tone={row.risk === 'High' ? 'red' : 'amber'}>{row.risk}</Badge>,
+    header: 'Risk',
+    id: 'risk',
+    width: '10%',
+  },
+  {
+    cell: (row) => (
+      <Badge
+        tone={row.status === 'Active' ? 'emerald' : row.status === 'Contested' ? 'amber' : 'slate'}
+      >
+        {row.status}
+      </Badge>
+    ),
+    header: 'Status',
+    id: 'status',
+    width: '12%',
+  },
+  {
+    cell: (row) => row.effectiveDate,
+    header: 'Effective',
+    id: 'effectiveDate',
+    width: '15%',
+  },
 ];
 
 const toneClasses = {
@@ -86,6 +192,24 @@ export default function Home() {
           </section>
         ))}
       </div>
+
+      <DataTable
+        actions={
+          <Button
+            size="sm"
+            trailingIcon={<ExternalLink aria-hidden="true" size={14} strokeWidth={2} />}
+            variant="secondary"
+          >
+            Open table
+          </Button>
+        }
+        className="mt-5"
+        columns={policyColumns}
+        description="A compact policy table preview for analyst workflows and upcoming explorer screens."
+        rowKey={(row) => row.id}
+        rows={policyRows}
+        title="Policy Records"
+      />
 
       <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(24rem,0.9fr)]">
         <section className="space-y-3">
