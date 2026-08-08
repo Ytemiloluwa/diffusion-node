@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
-import type { NavigationItemId } from './NavigationSidebar';
-import { AppHeader } from './AppHeader';
-import { NavigationSidebar } from './NavigationSidebar';
+import type { NavigationItemId } from '@/components/organisms';
+import { AppHeader, NavigationSidebar } from '@/components/organisms';
 
 export type DashboardShellProps = {
   actions?: ReactNode;
@@ -39,7 +38,9 @@ export function DashboardShell({
                   <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">{description}</p>
                 ) : null}
               </div>
-              {actions ? <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div> : null}
+              {actions ? (
+                <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>
+              ) : null}
             </div>
             {children}
           </div>
