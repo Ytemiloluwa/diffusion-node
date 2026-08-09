@@ -1,5 +1,7 @@
 export { AppHeader } from './AppHeader';
 export type { AppHeaderProps } from './AppHeader';
+export { AuthForm } from './AuthForm';
+export type { AuthFormProps } from './AuthForm';
 export { DataTable } from './DataTable';
 export type { DataTableColumn, DataTableProps } from './DataTable';
 export { NavigationSidebar } from './NavigationSidebar';
