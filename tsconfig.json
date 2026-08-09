@@ -11,6 +11,9 @@
     "types": ["node", "jest"]
   },
   "include": ["src/**/*.ts", "prisma.config.ts"],
+  "ts-node": {
+    "files": true
+  },
   "exclude": [
     "node_modules",
     "dist",
