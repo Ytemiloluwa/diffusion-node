@@ -5,6 +5,7 @@ export {
   getApiAccessToken,
   getApiBaseUrl,
   setApiAccessToken,
+  setApiUnauthorizedHandler,
 } from './http';
 export { issueToken, refreshAccessToken, registerUser } from './auth';
 export type { IssueTokenPayload, RefreshAccessTokenPayload, RegisterUserPayload } from './auth';

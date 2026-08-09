@@ -4,6 +4,7 @@ import type { ApiErrorResponse, ApiResponse, CursorPage } from './types';
 const normalizeBaseUrl = (value: string): string => value.replace(/\/+$/, '');
 
 let accessToken: string | null = null;
+let unauthorizedHandler: ((error: ApiClientError) => void) | null = null;
 
 export class ApiClientError extends Error {
   public readonly code?: string;
@@ -69,6 +70,12 @@ export const setApiAccessToken = (token: string | null): void => {
 
 export const getApiAccessToken = (): string | null => accessToken;
 
+export const setApiUnauthorizedHandler = (
+  handler: ((error: ApiClientError) => void) | null,
+): void => {
+  unauthorizedHandler = handler;
+};
+
 export const apiClient = axios.create({
   headers: {
     Accept: 'application/json',
@@ -88,7 +95,15 @@ apiClient.interceptors.request.use((config) => {
 
 apiClient.interceptors.response.use(
   (response) => response,
-  (error: AxiosError<unknown>) => Promise.reject(toApiClientError(error)),
+  (error: AxiosError<unknown>) => {
+    const apiError = toApiClientError(error);
+
+    if (apiError.status === 401) {
+      unauthorizedHandler?.(apiError);
+    }
+
+    return Promise.reject(apiError);
+  },
 );
 
 export const getData = async <T>(request: Promise<{ data: ApiResponse<T> }>): Promise<T> => {
