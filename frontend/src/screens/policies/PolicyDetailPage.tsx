@@ -16,7 +16,7 @@ import {
   RefreshCw,
   ShieldAlert,
 } from 'lucide-react';
-import { Badge, Button, Panel, Spinner, type BadgeProps } from '@/components/atoms';
+import { Badge, Button, CountryFlag, Panel, Spinner, type BadgeProps } from '@/components/atoms';
 import { DashboardShell } from '@/components/templates';
 import {
   getPolicy,
@@ -276,7 +276,14 @@ function CompanyList({ companies }: { companies: PolicyCompany[] }) {
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <p className="text-sm font-semibold text-ink">{company.name}</p>
-              <p className="mt-1 text-xs text-muted">{company.hqCountry.name}</p>
+              <p className="mt-1 inline-flex items-center gap-2 text-xs text-muted">
+                <CountryFlag
+                  className="h-3.5 w-5"
+                  countryCode={company.hqCountry.isoCode}
+                  countryName={company.hqCountry.name}
+                />
+                <span>{company.hqCountry.name}</span>
+              </p>
             </div>
             {company.entityListStatus ? <Badge tone="slate">{company.entityListStatus}</Badge> : null}
           </div>
@@ -301,7 +308,13 @@ function JurisdictionList({ jurisdictions }: { jurisdictions: Jurisdiction[] }) 
       {rows.map((jurisdiction) => (
         <div className="flex items-start justify-between gap-3 rounded-panel border border-line bg-surface-raised p-3" key={jurisdiction.id}>
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-ink">{jurisdiction.country.name}</p>
+            <p className="inline-flex items-center gap-2 text-sm font-semibold text-ink">
+              <CountryFlag
+                countryCode={jurisdiction.country.isoCode}
+                countryName={jurisdiction.country.name}
+              />
+              <span>{jurisdiction.country.name}</span>
+            </p>
             <p className="mt-1 text-xs text-muted">
               {jurisdiction.country.tierClassification ?? jurisdiction.country.isoCode}
             </p>

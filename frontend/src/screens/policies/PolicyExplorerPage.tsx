@@ -12,7 +12,7 @@ import {
   RefreshCw,
   ShieldAlert,
 } from 'lucide-react';
-import { Badge, Button, Panel, Spinner, type BadgeProps } from '@/components/atoms';
+import { Badge, Button, CountryFlag, Panel, Spinner, type BadgeProps } from '@/components/atoms';
 import {
   FilterPanel,
   PaginationControls,
@@ -31,6 +31,7 @@ import {
   listSources,
   listTechnologies,
   type Company,
+  type Country,
   type CountryWithRestrictionSummary,
   type PageInfo,
   type Policy,
@@ -145,6 +146,10 @@ const getPolicyCountryNames = (policy: Policy): string[] => [
   ...new Set(policy.jurisdictions.map(({ country }) => country.name)),
 ];
 
+const getPolicyCountries = (policy: Policy): Country[] => [
+  ...new Map(policy.jurisdictions.map(({ country }) => [country.id, country])).values(),
+];
+
 const getDisplayName = (email?: string): string => {
   if (!email) {
     return 'Analyst';
@@ -245,8 +250,25 @@ const policyColumns: DataTableColumn<Policy>[] = [
   },
   {
     cell: (policy) => {
-      const countries = getPolicyCountryNames(policy);
-      return countries.length ? countries.slice(0, 2).join(', ') : 'No country links';
+      const countries = getPolicyCountries(policy);
+
+      return countries.length ? (
+        <div className="flex flex-wrap gap-1.5">
+          {countries.slice(0, 2).map((country) => (
+            <span className="inline-flex items-center gap-1.5" key={country.id}>
+              <CountryFlag
+                className="h-3.5 w-5"
+                countryCode={country.isoCode}
+                countryName={country.name}
+              />
+              <span>{country.name}</span>
+            </span>
+          ))}
+          {countries.length > 2 ? <Badge tone="slate">+{formatCount(countries.length - 2)}</Badge> : null}
+        </div>
+      ) : (
+        'No country links'
+      );
     },
     header: 'Countries',
     id: 'countries',
@@ -640,7 +662,7 @@ export function PolicyExplorerPage() {
           />
 
           <Panel
-            actions={<Badge tone="emerald">API</Badge>}
+            actions={<Badge tone="emerald">Live data</Badge>}
             description="Counts from the currently loaded result page."
             title="Result Summary"
           >
