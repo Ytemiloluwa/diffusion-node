@@ -21,7 +21,7 @@ export type PolicyFilters = {
 
 type FilterKey = keyof PolicyFilters;
 
-const filterFields: Array<{
+const defaultFilterFields: Array<{
   key: FilterKey;
   label: string;
 }> = [
@@ -35,6 +35,7 @@ const filterFields: Array<{
 ];
 
 export type FilterPanelProps = {
+  fields?: FilterKey[];
   filters: PolicyFilters;
   isDisabled?: boolean;
   onApply?: (filters: PolicyFilters) => void;
@@ -44,6 +45,7 @@ export type FilterPanelProps = {
 };
 
 export function FilterPanel({
+  fields,
   filters,
   isDisabled = false,
   onApply,
@@ -52,6 +54,9 @@ export function FilterPanel({
   options = {},
 }: FilterPanelProps) {
   const hasActiveFilters = Object.values(filters).some(Boolean);
+  const visibleFields = fields
+    ? defaultFilterFields.filter((field) => fields.includes(field.key))
+    : defaultFilterFields;
 
   const updateFilter = (key: FilterKey, value: string) => {
     onChange({
@@ -83,7 +88,7 @@ export function FilterPanel({
     >
       <form className="grid gap-4" onSubmit={handleSubmit}>
         <div className="grid gap-3 sm:grid-cols-2">
-          {filterFields.map((field) => (
+          {visibleFields.map((field) => (
             <label className="grid gap-1.5" key={field.key}>
               <span className="text-sm font-medium text-slate-800">{field.label}</span>
               <select
