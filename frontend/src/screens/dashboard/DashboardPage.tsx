@@ -13,7 +13,7 @@ import {
   ShieldAlert,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { Badge, Button, Panel, Spinner, type BadgeProps } from '@/components/atoms';
+import { Badge, Button, CountryFlag, Panel, Spinner, type BadgeProps } from '@/components/atoms';
 import { PolicyCard } from '@/components/molecules';
 import { DataTable, type DataTableColumn } from '@/components/organisms';
 import { DashboardShell } from '@/components/templates';
@@ -24,6 +24,7 @@ import {
   listTechnologies,
   listTimeline,
   type Company,
+  type Country,
   type CountryWithRestrictionSummary,
   type Policy,
   type PolicyStatus,
@@ -126,6 +127,10 @@ const getPolicyCountryNames = (policy: Policy): string[] => [
   ...new Set(policy.jurisdictions.map(({ country }) => country.name)),
 ];
 
+const getPolicyCountries = (policy: Policy): Country[] => [
+  ...new Map(policy.jurisdictions.map(({ country }) => [country.id, country])).values(),
+];
+
 const getRestrictionCount = (country: CountryWithRestrictionSummary): number =>
   Object.values(country.restrictionSummary).reduce((total, count) => total + count, 0);
 
@@ -193,8 +198,25 @@ const policyColumns: DataTableColumn<Policy>[] = [
   },
   {
     cell: (policy) => {
-      const countries = getPolicyCountryNames(policy);
-      return countries.length ? countries.slice(0, 2).join(', ') : 'No country links';
+      const countries = getPolicyCountries(policy);
+
+      return countries.length ? (
+        <div className="flex flex-wrap gap-1.5">
+          {countries.slice(0, 2).map((country) => (
+            <span className="inline-flex items-center gap-1.5" key={country.id}>
+              <CountryFlag
+                className="h-3.5 w-5"
+                countryCode={country.isoCode}
+                countryName={country.name}
+              />
+              <span>{country.name}</span>
+            </span>
+          ))}
+          {countries.length > 2 ? <Badge tone="slate">+{formatCount(countries.length - 2)}</Badge> : null}
+        </div>
+      ) : (
+        'No country links'
+      );
     },
     header: 'Countries',
     id: 'countries',
@@ -349,7 +371,7 @@ export function DashboardPage() {
 
     return [
       {
-        detail: data.hasMorePolicies ? 'Showing the first 100 records' : 'Loaded from policy API',
+        detail: data.hasMorePolicies ? 'Showing the first 100 records' : 'Loaded from policy records',
         icon: Database,
         label: 'Policies loaded',
         tone: 'slate',
@@ -456,8 +478,8 @@ export function DashboardPage() {
         }
         className="mt-5"
         columns={policyColumns}
-        description="Policy records returned by the Phase 2 search API."
-        emptyState="No policy records returned by the API."
+        description="Curated policy records with linked companies, technologies, and jurisdictions."
+        emptyState="No policy records found."
         isLoading={isLoading}
         rowKey={(policy) => policy.id}
         rows={data.policies.slice(0, 8)}
@@ -470,7 +492,7 @@ export function DashboardPage() {
             <div>
               <h2 className="text-lg font-semibold text-ink">Recent Policy Movement</h2>
               <p className="mt-1 text-sm text-muted">
-                Policies sorted from the latest effective or updated date returned by the API.
+                Policies sorted by latest effective or updated date.
               </p>
             </div>
             <Badge tone="slate">{formatCount(recentPolicies.length)} shown</Badge>
@@ -499,14 +521,14 @@ export function DashboardPage() {
               />
             ))
           ) : (
-            <Panel>No recent policy records returned by the API.</Panel>
+            <Panel>No recent policy records found.</Panel>
           )}
         </section>
 
         <aside className="space-y-5">
           <Panel
-            actions={<Badge tone="emerald">API</Badge>}
-            description="Most recent timeline events returned by the timeline endpoint."
+            actions={<Badge tone="emerald">Live data</Badge>}
+            description="Most recent timeline events in the curated dataset."
             title="Regulatory Timeline"
           >
             {isLoading ? (
@@ -549,7 +571,7 @@ export function DashboardPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-muted">No timeline events returned by the API.</p>
+              <p className="text-sm text-muted">No timeline events found.</p>
             )}
           </Panel>
 
@@ -568,7 +590,10 @@ export function DashboardPage() {
                 {topCountries.map(({ country, restrictionCount }) => (
                   <div className="flex items-center justify-between gap-3" key={country.id}>
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-ink">{country.name}</p>
+                      <p className="inline-flex items-center gap-2 text-sm font-semibold text-ink">
+                        <CountryFlag countryCode={country.isoCode} countryName={country.name} />
+                        <span>{country.name}</span>
+                      </p>
                       <p className="mt-1 text-xs text-muted">
                         {country.tierClassification ?? country.isoCode}
                       </p>
