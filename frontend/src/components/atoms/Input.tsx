@@ -13,7 +13,7 @@ export function Input({ className, error, helperText, id, label, ...props }: Inp
   const errorId = error && inputId ? `${inputId}-error` : undefined;
 
   return (
-    <div className="grid gap-1.5">
+    <div className="grid min-w-0 gap-1.5">
       {label ? (
         <label className="text-sm font-medium text-ink-soft" htmlFor={inputId}>
           {label}
@@ -24,6 +24,7 @@ export function Input({ className, error, helperText, id, label, ...props }: Inp
         aria-invalid={Boolean(error)}
         className={cn(
           'h-10 rounded-control border bg-surface px-3 text-sm text-ink shadow-control transition-colors',
+          'w-full min-w-0',
           'placeholder:text-subtle disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-muted',
           'focus:border-focus focus:outline-none focus:ring-2 focus:ring-focus-soft',
           error ? 'border-danger focus:border-danger focus:ring-danger-soft' : 'border-line-strong',

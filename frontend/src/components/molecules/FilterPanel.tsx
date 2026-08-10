@@ -86,13 +86,13 @@ export function FilterPanel({
       description="Refine policies by their linked entities and source metadata."
       title="Filters"
     >
-      <form className="grid gap-4" onSubmit={handleSubmit}>
-        <div className="grid gap-3 sm:grid-cols-2">
+      <form className="grid min-w-0 gap-4" onSubmit={handleSubmit}>
+        <div className="grid gap-3 sm:grid-cols-[repeat(2,minmax(0,1fr))]">
           {visibleFields.map((field) => (
-            <label className="grid gap-1.5" key={field.key}>
+            <label className="grid min-w-0 gap-1.5" key={field.key}>
               <span className="text-sm font-medium text-ink-soft">{field.label}</span>
               <select
-                className="h-10 rounded-control border border-line-strong bg-surface px-3 text-sm text-ink shadow-control transition-colors disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-muted focus:border-focus focus:outline-none focus:ring-2 focus:ring-focus-soft"
+                className="h-10 w-full min-w-0 max-w-full rounded-control border border-line-strong bg-surface px-3 text-sm text-ink shadow-control transition-colors disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-muted focus:border-focus focus:outline-none focus:ring-2 focus:ring-focus-soft"
                 disabled={isDisabled}
                 onChange={(event: ChangeEvent<HTMLSelectElement>) =>
                   updateFilter(field.key, event.target.value)
