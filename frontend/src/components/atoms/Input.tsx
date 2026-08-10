@@ -15,7 +15,7 @@ export function Input({ className, error, helperText, id, label, ...props }: Inp
   return (
     <div className="grid gap-1.5">
       {label ? (
-        <label className="text-sm font-medium text-slate-800" htmlFor={inputId}>
+        <label className="text-sm font-medium text-ink-soft" htmlFor={inputId}>
           {label}
         </label>
       ) : null}
@@ -23,21 +23,21 @@ export function Input({ className, error, helperText, id, label, ...props }: Inp
         aria-describedby={errorId ?? helperId}
         aria-invalid={Boolean(error)}
         className={cn(
-          'h-10 rounded-md border bg-white px-3 text-sm text-slate-950 shadow-sm transition-colors',
-          'placeholder:text-slate-400 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500',
-          'focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200',
-          error ? 'border-red-500 focus:border-red-500 focus:ring-red-100' : 'border-slate-300',
+          'h-10 rounded-control border bg-surface px-3 text-sm text-ink shadow-control transition-colors',
+          'placeholder:text-subtle disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-muted',
+          'focus:border-focus focus:outline-none focus:ring-2 focus:ring-focus-soft',
+          error ? 'border-danger focus:border-danger focus:ring-danger-soft' : 'border-line-strong',
           className,
         )}
         id={inputId}
         {...props}
       />
       {error ? (
-        <p className="text-sm text-red-700" id={errorId}>
+        <p className="text-sm text-danger" id={errorId}>
           {error}
         </p>
       ) : helperText ? (
-        <p className="text-sm text-slate-500" id={helperId}>
+        <p className="text-sm text-muted" id={helperId}>
           {helperText}
         </p>
       ) : null}

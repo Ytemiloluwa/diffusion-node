@@ -94,13 +94,13 @@ export function AuthForm({ className, defaultMode = 'login' }: AuthFormProps) {
   return (
     <section
       aria-labelledby="auth-heading"
-      className={cn('rounded-md border border-slate-200 bg-white shadow-sm', className)}
+      className={cn('rounded-panel border border-line bg-surface shadow-panel', className)}
     >
-      <header className="border-b border-slate-200 px-5 py-4">
+      <header className="border-b border-line px-5 py-4">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-sm font-semibold uppercase text-teal-800">Diffusion Node</p>
-            <h1 className="mt-1 text-xl font-semibold text-slate-950" id="auth-heading">
+            <p className="text-sm font-semibold uppercase text-brand">Diffusion Node</p>
+            <h1 className="mt-1 text-xl font-semibold text-ink" id="auth-heading">
               Access policy intelligence
             </h1>
           </div>
@@ -111,17 +111,17 @@ export function AuthForm({ className, defaultMode = 'login' }: AuthFormProps) {
       <div className="px-5 py-5">
         <div
           aria-label="Authentication mode"
-          className="grid grid-cols-2 gap-1 rounded-md bg-slate-100 p-1"
+          className="grid grid-cols-2 gap-1 rounded-control bg-surface-muted p-1"
           role="tablist"
         >
           {tabs.map((tab) => (
             <button
               aria-selected={mode === tab.mode}
               className={cn(
-                'h-9 rounded-md text-sm font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700',
+                'h-9 rounded-control text-sm font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
                 mode === tab.mode
-                  ? 'bg-white text-slate-950 shadow-sm'
-                  : 'text-slate-600 hover:text-slate-950',
+                  ? 'bg-surface text-ink shadow-control'
+                  : 'text-muted hover:text-ink',
               )}
               key={tab.mode}
               onClick={() => setActiveMode(tab.mode)}
@@ -202,7 +202,7 @@ export function AuthForm({ className, defaultMode = 'login' }: AuthFormProps) {
           />
 
           {error || validationError ? (
-            <div className="flex gap-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+            <div className="flex gap-2 rounded-control border border-danger-line bg-danger-soft px-3 py-2 text-sm text-danger">
               <AlertCircle aria-hidden="true" className="mt-0.5 size-4 shrink-0" strokeWidth={2} />
               <p>{validationError ?? error?.message}</p>
             </div>
