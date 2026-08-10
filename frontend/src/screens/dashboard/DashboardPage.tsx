@@ -87,10 +87,10 @@ const statusTones: Record<PolicyStatus, BadgeProps['tone']> = {
 };
 
 const metricToneClasses: Record<MetricTone, string> = {
-  amber: 'bg-amber-50 text-amber-800 ring-amber-200',
-  emerald: 'bg-emerald-50 text-emerald-800 ring-emerald-200',
-  sky: 'bg-sky-50 text-sky-800 ring-sky-200',
-  slate: 'bg-slate-100 text-slate-800 ring-slate-200',
+  amber: 'bg-warning-soft text-warning ring-warning-line',
+  emerald: 'bg-success-soft text-success ring-success-line',
+  sky: 'bg-info-soft text-info ring-info-line',
+  slate: 'bg-surface-muted text-ink-soft ring-line',
 };
 
 const formatDate = (value?: string | null): string => {
@@ -166,8 +166,8 @@ const policyColumns: DataTableColumn<Policy>[] = [
   {
     cell: (policy) => (
       <div>
-        <p className="font-semibold text-slate-950">{policy.title}</p>
-        <p className="mt-1 text-xs text-slate-500">{getPolicySourceName(policy)}</p>
+        <p className="font-semibold text-ink">{policy.title}</p>
+        <p className="mt-1 text-xs text-muted">{getPolicySourceName(policy)}</p>
       </div>
     ),
     header: 'Policy',
@@ -216,19 +216,19 @@ const policyColumns: DataTableColumn<Policy>[] = [
 
 function MetricCard({ detail, icon: Icon, label, tone, value }: Metric) {
   return (
-    <section className="rounded-md border border-slate-200 bg-white p-4 shadow-sm">
+    <section className="rounded-panel border border-line bg-surface p-4 shadow-panel">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-sm font-medium text-slate-500">{label}</p>
-          <p className="mt-3 text-3xl font-semibold tracking-normal text-slate-950">{value}</p>
+          <p className="text-sm font-medium text-muted">{label}</p>
+          <p className="mt-3 text-3xl font-semibold tracking-normal text-ink">{value}</p>
         </div>
         <span
-          className={`flex size-10 shrink-0 items-center justify-center rounded-md ring-1 ring-inset ${metricToneClasses[tone]}`}
+          className={`flex size-10 shrink-0 items-center justify-center rounded-control ring-1 ring-inset ${metricToneClasses[tone]}`}
         >
           <Icon aria-hidden="true" size={19} strokeWidth={2} />
         </span>
       </div>
-      <p className="mt-3 text-sm text-slate-500">{detail}</p>
+      <p className="mt-3 text-sm text-muted">{detail}</p>
     </section>
   );
 }
@@ -422,8 +422,8 @@ export function DashboardPage() {
       userName={getDisplayName(user?.email)}
     >
       {error ? (
-        <Panel className="mb-5 border-red-200 bg-red-50" title="Dashboard data unavailable">
-          <div className="flex gap-3 text-sm text-red-800">
+        <Panel className="mb-5 border-danger-line bg-danger-soft" title="Dashboard data unavailable">
+          <div className="flex gap-3 text-sm text-danger">
             <ShieldAlert aria-hidden="true" className="mt-0.5 size-4 shrink-0" strokeWidth={2} />
             <p>{error}</p>
           </div>
@@ -435,12 +435,12 @@ export function DashboardPage() {
           ? Array.from({ length: 4 }, (_, index) => (
               <section
                 aria-hidden="true"
-                className="rounded-md border border-slate-200 bg-white p-4 shadow-sm"
+                className="rounded-panel border border-line bg-surface p-4 shadow-panel"
                 key={index}
               >
-                <div className="h-4 w-28 rounded-md bg-slate-200" />
-                <div className="mt-4 h-8 w-16 rounded-md bg-slate-200" />
-                <div className="mt-4 h-4 w-40 rounded-md bg-slate-200" />
+                <div className="h-4 w-28 rounded-control bg-line" />
+                <div className="mt-4 h-8 w-16 rounded-control bg-line" />
+                <div className="mt-4 h-4 w-40 rounded-control bg-line" />
               </section>
             ))
           : metrics.map((metric) => <MetricCard key={metric.label} {...metric} />)}
@@ -468,8 +468,8 @@ export function DashboardPage() {
         <section className="space-y-3">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-slate-950">Recent Policy Movement</h2>
-              <p className="mt-1 text-sm text-slate-600">
+              <h2 className="text-lg font-semibold text-ink">Recent Policy Movement</h2>
+              <p className="mt-1 text-sm text-muted">
                 Policies sorted from the latest effective or updated date returned by the API.
               </p>
             </div>
@@ -478,7 +478,7 @@ export function DashboardPage() {
 
           {isLoading ? (
             <Panel>
-              <div className="flex items-center gap-3 text-sm text-slate-500">
+              <div className="flex items-center gap-3 text-sm text-muted">
                 <Spinner label="Loading recent policies" />
                 <span>Loading recent policies</span>
               </div>
@@ -510,7 +510,7 @@ export function DashboardPage() {
             title="Regulatory Timeline"
           >
             {isLoading ? (
-              <div className="flex items-center gap-3 text-sm text-slate-500">
+              <div className="flex items-center gap-3 text-sm text-muted">
                 <Spinner label="Loading timeline" />
                 <span>Loading timeline</span>
               </div>
@@ -518,21 +518,21 @@ export function DashboardPage() {
               <div className="space-y-4">
                 {data.timeline.map((event) => (
                   <div className="flex gap-3" key={event.id}>
-                    <span className="mt-1 flex size-8 shrink-0 items-center justify-center rounded-md bg-teal-50 text-teal-700">
+                    <span className="mt-1 flex size-8 shrink-0 items-center justify-center rounded-control bg-brand-soft text-brand">
                       <CalendarDays aria-hidden="true" size={16} strokeWidth={2} />
                     </span>
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-slate-950">
+                      <p className="text-sm font-semibold text-ink">
                         {event.policy?.title ?? event.eventType}
                       </p>
-                      <p className="mt-1 text-sm text-slate-600">
+                      <p className="mt-1 text-sm text-muted">
                         {event.description ?? event.eventType}
                       </p>
-                      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500">
+                      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
                         <span>{formatDate(event.eventDate)}</span>
                         {event.sourceUrl ? (
                           <a
-                            className="inline-flex items-center gap-1 font-medium text-teal-800 hover:text-teal-900"
+                            className="inline-flex items-center gap-1 font-medium text-brand hover:text-brand-hover"
                             href={event.sourceUrl}
                             rel="noreferrer"
                             target="_blank"
@@ -549,7 +549,7 @@ export function DashboardPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-slate-500">No timeline events returned by the API.</p>
+              <p className="text-sm text-muted">No timeline events returned by the API.</p>
             )}
           </Panel>
 
@@ -559,7 +559,7 @@ export function DashboardPage() {
             title="Country Exposure"
           >
             {isLoading ? (
-              <div className="flex items-center gap-3 text-sm text-slate-500">
+              <div className="flex items-center gap-3 text-sm text-muted">
                 <Spinner label="Loading countries" />
                 <span>Loading countries</span>
               </div>
@@ -568,8 +568,8 @@ export function DashboardPage() {
                 {topCountries.map(({ country, restrictionCount }) => (
                   <div className="flex items-center justify-between gap-3" key={country.id}>
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-slate-950">{country.name}</p>
-                      <p className="mt-1 text-xs text-slate-500">
+                      <p className="text-sm font-semibold text-ink">{country.name}</p>
+                      <p className="mt-1 text-xs text-muted">
                         {country.tierClassification ?? country.isoCode}
                       </p>
                     </div>
@@ -578,7 +578,7 @@ export function DashboardPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-slate-500">No linked country restrictions returned.</p>
+              <p className="text-sm text-muted">No linked country restrictions returned.</p>
             )}
           </Panel>
 
@@ -587,7 +587,7 @@ export function DashboardPage() {
               {(Object.keys(statusLabels) as PolicyStatus[]).map((status) => (
                 <div className="flex items-center justify-between gap-3" key={status}>
                   <Badge tone={statusTones[status]}>{statusLabels[status]}</Badge>
-                  <span className="text-sm font-semibold text-slate-950">
+                  <span className="text-sm font-semibold text-ink">
                     {formatCount(statusCounts[status])}
                   </span>
                 </div>

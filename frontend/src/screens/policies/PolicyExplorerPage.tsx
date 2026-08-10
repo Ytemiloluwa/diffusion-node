@@ -214,12 +214,12 @@ const policyColumns: DataTableColumn<Policy>[] = [
     cell: (policy) => (
       <div>
         <Link
-          className="font-semibold text-slate-950 hover:text-teal-800"
+          className="font-semibold text-ink hover:text-brand"
           href={`/policies/${policy.id}`}
         >
           {policy.title}
         </Link>
-        <p className="mt-1 text-xs text-slate-500">{getPolicySourceName(policy)}</p>
+        <p className="mt-1 text-xs text-muted">{getPolicySourceName(policy)}</p>
       </div>
     ),
     header: 'Policy',
@@ -270,7 +270,7 @@ const policyColumns: DataTableColumn<Policy>[] = [
 
       return source?.sourceUrl ? (
         <a
-          className="inline-flex items-center gap-1 font-medium text-teal-800 hover:text-teal-900"
+          className="inline-flex items-center gap-1 font-medium text-brand hover:text-brand-hover"
           href={source.sourceUrl}
           rel="noreferrer"
           target="_blank"
@@ -279,7 +279,7 @@ const policyColumns: DataTableColumn<Policy>[] = [
           <ExternalLink aria-hidden="true" size={13} strokeWidth={2} />
         </a>
       ) : (
-        <span className="text-slate-400">None</span>
+        <span className="text-subtle">None</span>
       );
     },
     header: 'Link',
@@ -518,8 +518,8 @@ export function PolicyExplorerPage() {
       userName={getDisplayName(user?.email)}
     >
       {error ? (
-        <Panel className="mb-5 border-red-200 bg-red-50" title="Policy records unavailable">
-          <div className="flex gap-3 text-sm text-red-800">
+        <Panel className="mb-5 border-danger-line bg-danger-soft" title="Policy records unavailable">
+          <div className="flex gap-3 text-sm text-danger">
             <ShieldAlert aria-hidden="true" className="mt-0.5 size-4 shrink-0" strokeWidth={2} />
             <p>{error}</p>
           </div>
@@ -556,7 +556,7 @@ export function PolicyExplorerPage() {
                   </Badge>
                 ))
               ) : (
-                <span className="text-sm text-slate-500">No active filters.</span>
+                <span className="text-sm text-muted">No active filters.</span>
               )}
             </div>
           </Panel>
@@ -584,8 +584,8 @@ export function PolicyExplorerPage() {
           <section className="space-y-3">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <h2 className="text-lg font-semibold text-slate-950">Policy Cards</h2>
-                <p className="mt-1 text-sm text-slate-600">
+                <h2 className="text-lg font-semibold text-ink">Policy Cards</h2>
+                <p className="mt-1 text-sm text-muted">
                   Compact policy summaries from the current result page.
                 </p>
               </div>
@@ -594,7 +594,7 @@ export function PolicyExplorerPage() {
 
             {isLoading ? (
               <Panel>
-                <div className="flex items-center gap-3 text-sm text-slate-500">
+                <div className="flex items-center gap-3 text-sm text-muted">
                   <Spinner label="Loading policies" />
                   <span>Loading policies</span>
                 </div>
@@ -604,7 +604,7 @@ export function PolicyExplorerPage() {
                 <PolicyCard
                   actions={
                     <Link
-                      className="inline-flex h-8 items-center justify-center rounded-md border border-slate-300 bg-white px-3 text-sm font-medium text-slate-900 transition-colors hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-500"
+                      className="inline-flex h-8 items-center justify-center rounded-control border border-line-strong bg-surface px-3 text-sm font-medium text-ink shadow-control transition-colors hover:bg-surface-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
                       href={`/policies/${policy.id}`}
                     >
                       Details
@@ -646,36 +646,36 @@ export function PolicyExplorerPage() {
           >
             <div className="grid gap-3">
               <div className="flex items-center justify-between gap-3">
-                <span className="inline-flex items-center gap-2 text-sm text-slate-600">
+                <span className="inline-flex items-center gap-2 text-sm text-muted">
                   <FileSearch aria-hidden="true" size={16} strokeWidth={2} />
                   Policies
                 </span>
-                <span className="text-sm font-semibold text-slate-950">{formatCount(policies.length)}</span>
+                <span className="text-sm font-semibold text-ink">{formatCount(policies.length)}</span>
               </div>
               <div className="flex items-center justify-between gap-3">
-                <span className="inline-flex items-center gap-2 text-sm text-slate-600">
+                <span className="inline-flex items-center gap-2 text-sm text-muted">
                   <Filter aria-hidden="true" size={16} strokeWidth={2} />
                   Active filters
                 </span>
-                <span className="text-sm font-semibold text-slate-950">
+                <span className="text-sm font-semibold text-ink">
                   {formatCount(activeFilters.length)}
                 </span>
               </div>
               <div className="flex items-center justify-between gap-3">
-                <span className="inline-flex items-center gap-2 text-sm text-slate-600">
+                <span className="inline-flex items-center gap-2 text-sm text-muted">
                   <Building2 aria-hidden="true" size={16} strokeWidth={2} />
                   Linked companies
                 </span>
-                <span className="text-sm font-semibold text-slate-950">
+                <span className="text-sm font-semibold text-ink">
                   {formatCount(linkedEntityCounts.companies)}
                 </span>
               </div>
               <div className="flex items-center justify-between gap-3">
-                <span className="inline-flex items-center gap-2 text-sm text-slate-600">
+                <span className="inline-flex items-center gap-2 text-sm text-muted">
                   <Globe2 aria-hidden="true" size={16} strokeWidth={2} />
                   Linked countries
                 </span>
-                <span className="text-sm font-semibold text-slate-950">
+                <span className="text-sm font-semibold text-ink">
                   {formatCount(linkedEntityCounts.countries)}
                 </span>
               </div>
@@ -687,7 +687,7 @@ export function PolicyExplorerPage() {
               {(Object.keys(statusLabels) as PolicyStatus[]).map((status) => (
                 <div className="flex items-center justify-between gap-3" key={status}>
                   <Badge tone={statusTones[status]}>{statusLabels[status]}</Badge>
-                  <span className="text-sm font-semibold text-slate-950">
+                  <span className="text-sm font-semibold text-ink">
                     {formatCount(statusCounts[status])}
                   </span>
                 </div>
@@ -696,7 +696,7 @@ export function PolicyExplorerPage() {
           </Panel>
 
           <Panel description="Available filter dimensions from the curated dataset." title="Filter Sources">
-            <div className="space-y-3 text-sm text-slate-600">
+            <div className="space-y-3 text-sm text-muted">
               <div className="flex items-center justify-between gap-3">
                 <span>Technologies</span>
                 <Badge tone="slate">{formatCount(options.technologies.length)}</Badge>

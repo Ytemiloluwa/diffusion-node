@@ -40,7 +40,7 @@ export function PaginationControls({
         Previous
       </Button>
 
-      {pageLabel ? <p className="text-sm font-medium text-slate-600">{pageLabel}</p> : null}
+      {pageLabel ? <p className="text-sm font-medium text-muted">{pageLabel}</p> : null}
 
       <Button
         disabled={!hasNextPage || isLoading}

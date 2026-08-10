@@ -66,13 +66,13 @@ export function PolicyCard({
 }: PolicyCardProps) {
   return (
     <article
-      className={cn('rounded-md border border-slate-200 bg-white p-4 shadow-sm', className)}
+      className={cn('rounded-panel border border-line bg-surface p-4 shadow-panel', className)}
       {...props}
     >
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <h2 className="text-base font-semibold text-slate-950">{title}</h2>
-          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-slate-500">
+          <h2 className="text-base font-semibold text-ink">{title}</h2>
+          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted">
             {sourceName ? (
               <span className="inline-flex items-center gap-1.5">
                 <Landmark aria-hidden="true" size={15} strokeWidth={2} />
@@ -99,7 +99,7 @@ export function PolicyCard({
         </div>
       </div>
 
-      {summary ? <p className="mt-3 text-sm leading-6 text-slate-600">{summary}</p> : null}
+      {summary ? <p className="mt-3 text-sm leading-6 text-muted">{summary}</p> : null}
 
       <div className="mt-4 grid gap-2">
         <DetailList items={technologies} />

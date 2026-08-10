@@ -90,9 +90,9 @@ export function FilterPanel({
         <div className="grid gap-3 sm:grid-cols-2">
           {visibleFields.map((field) => (
             <label className="grid gap-1.5" key={field.key}>
-              <span className="text-sm font-medium text-slate-800">{field.label}</span>
+              <span className="text-sm font-medium text-ink-soft">{field.label}</span>
               <select
-                className="h-10 rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 shadow-sm transition-colors disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
+                className="h-10 rounded-control border border-line-strong bg-surface px-3 text-sm text-ink shadow-control transition-colors disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-muted focus:border-focus focus:outline-none focus:ring-2 focus:ring-focus-soft"
                 disabled={isDisabled}
                 onChange={(event: ChangeEvent<HTMLSelectElement>) =>
                   updateFilter(field.key, event.target.value)

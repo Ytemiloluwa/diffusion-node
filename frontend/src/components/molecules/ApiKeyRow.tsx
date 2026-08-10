@@ -31,19 +31,19 @@ export function ApiKeyRow({
   return (
     <div
       className={cn(
-        'grid gap-3 rounded-md border border-slate-200 bg-white px-4 py-3 sm:grid-cols-[1fr_auto]',
+        'grid gap-3 rounded-panel border border-line bg-surface px-4 py-3 shadow-panel sm:grid-cols-[1fr_auto]',
         className,
       )}
       {...props}
     >
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-2">
-          <KeyRound aria-hidden="true" className="text-slate-500" size={16} strokeWidth={2} />
-          <p className="font-medium text-slate-950">{label}</p>
+          <KeyRound aria-hidden="true" className="text-muted" size={16} strokeWidth={2} />
+          <p className="font-medium text-ink">{label}</p>
           <Badge tone={isRevoked ? 'red' : 'emerald'}>{isRevoked ? 'Revoked' : 'Active'}</Badge>
         </div>
-        <p className="mt-2 truncate font-mono text-sm text-slate-600">{maskedKey}</p>
-        <dl className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
+        <p className="mt-2 truncate font-mono text-sm text-muted">{maskedKey}</p>
+        <dl className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
           {createdAt ? (
             <div className="flex gap-1">
               <dt>Created</dt>

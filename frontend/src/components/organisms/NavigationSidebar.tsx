@@ -52,15 +52,15 @@ export function NavigationSidebar({ activeItem, className }: NavigationSidebarPr
   return (
     <aside
       className={cn(
-        'hidden min-h-screen border-r border-slate-200 bg-white text-slate-700 lg:flex lg:flex-col',
+        'hidden min-h-screen border-r border-line bg-surface text-ink-soft lg:flex lg:flex-col',
         className,
       )}
     >
-      <div className="flex h-20 items-center gap-3 border-b border-slate-200 px-6">
-        <span className="flex size-10 items-center justify-center rounded-md bg-teal-700 text-white">
+      <div className="flex h-20 items-center gap-3 border-b border-line px-6">
+        <span className="flex size-10 items-center justify-center rounded-panel bg-brand text-brand-contrast shadow-control">
           <ShieldCheck aria-hidden="true" size={21} strokeWidth={2} />
         </span>
-        <span className="text-lg font-semibold text-slate-950">Diffusion Node</span>
+        <span className="text-lg font-semibold text-ink">Diffusion Node</span>
       </div>
 
       <nav aria-label="Main navigation" className="flex-1 space-y-1 px-3 py-6">
@@ -72,11 +72,11 @@ export function NavigationSidebar({ activeItem, className }: NavigationSidebarPr
             <Link
               aria-current={isActive ? 'page' : undefined}
               className={cn(
-                'flex h-11 items-center gap-3 rounded-md px-3 text-sm font-medium transition-colors',
-                'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700',
+                'flex h-11 items-center gap-3 rounded-control px-3 text-sm font-medium transition-colors',
+                'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
                 isActive
-                  ? 'bg-teal-50 text-teal-800 ring-1 ring-inset ring-teal-100'
-                  : 'text-slate-700 hover:bg-slate-100 hover:text-slate-950',
+                  ? 'bg-brand-soft text-brand ring-1 ring-inset ring-brand-line'
+                  : 'text-ink-soft hover:bg-surface-muted hover:text-ink',
               )}
               href={item.href}
               key={item.id}
@@ -88,11 +88,11 @@ export function NavigationSidebar({ activeItem, className }: NavigationSidebarPr
         })}
       </nav>
 
-      <div className="border-t border-slate-200 p-4">
-        <div className="rounded-md bg-slate-50 p-3">
-          <p className="text-xs font-medium uppercase text-slate-500">Workspace</p>
-          <p className="mt-1 text-sm font-semibold text-slate-950">Policy Intelligence</p>
-          <p className="mt-1 text-xs text-slate-500">Production dataset</p>
+      <div className="border-t border-line p-4">
+        <div className="rounded-panel bg-surface-muted p-3">
+          <p className="text-xs font-medium uppercase text-muted">Workspace</p>
+          <p className="mt-1 text-sm font-semibold text-ink">Policy Intelligence</p>
+          <p className="mt-1 text-xs text-muted">Production dataset</p>
         </div>
       </div>
     </aside>

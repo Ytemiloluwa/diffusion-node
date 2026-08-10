@@ -68,13 +68,13 @@ export function SearchBar({
       </label>
       <Search
         aria-hidden="true"
-        className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400"
+        className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-subtle"
       />
       <input
         className={cn(
-          'h-10 w-full rounded-md border border-slate-300 bg-white py-2 pl-9 pr-10 text-sm text-slate-950 shadow-sm transition-colors',
-          'placeholder:text-slate-400 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500',
-          'focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200',
+          'h-10 w-full rounded-control border border-line-strong bg-surface py-2 pl-9 pr-10 text-sm text-ink shadow-control transition-colors',
+          'placeholder:text-subtle disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-muted',
+          'focus:border-focus focus:outline-none focus:ring-2 focus:ring-focus-soft',
         )}
         id={inputId}
         onChange={handleChange}

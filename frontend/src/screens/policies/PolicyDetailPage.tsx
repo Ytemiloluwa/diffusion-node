@@ -128,12 +128,12 @@ function ExternalRecordLink({
   label: string;
 }) {
   if (!href) {
-    return <span className="text-sm text-slate-500">{label}</span>;
+    return <span className="text-sm text-muted">{label}</span>;
   }
 
   return (
     <a
-      className="inline-flex items-center gap-1.5 text-sm font-medium text-teal-800 hover:text-teal-900"
+      className="inline-flex items-center gap-1.5 text-sm font-medium text-brand hover:text-brand-hover"
       href={href}
       rel="noreferrer"
       target="_blank"
@@ -145,7 +145,7 @@ function ExternalRecordLink({
 }
 
 function EmptyPanelText({ children }: { children: string }) {
-  return <p className="text-sm text-slate-500">{children}</p>;
+  return <p className="text-sm text-muted">{children}</p>;
 }
 
 function TimelineStatusBadge({ status }: { status: PolicyStatus | null }) {
@@ -161,7 +161,7 @@ function TimelineEntry({ item }: { item: PolicyTimelineItem }) {
 
   return (
     <li className="relative pl-11">
-      <span className="absolute left-0 top-1 flex size-8 items-center justify-center rounded-md bg-teal-50 text-teal-700 ring-1 ring-inset ring-teal-100">
+      <span className="absolute left-0 top-1 flex size-8 items-center justify-center rounded-control bg-brand-soft text-brand ring-1 ring-inset ring-brand-line">
         {isRevision ? (
           <GitBranch aria-hidden="true" size={16} strokeWidth={2} />
         ) : (
@@ -169,30 +169,30 @@ function TimelineEntry({ item }: { item: PolicyTimelineItem }) {
         )}
       </span>
 
-      <div className="rounded-md border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="rounded-panel border border-line bg-surface p-4 shadow-panel">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-slate-950">
+            <p className="text-sm font-semibold text-ink">
               {isRevision ? 'Status revision' : item.eventType}
             </p>
-            <p className="mt-1 text-sm text-slate-500">{formatDate(item.date)}</p>
+            <p className="mt-1 text-sm text-muted">{formatDate(item.date)}</p>
           </div>
           {isRevision ? (
             <div className="flex flex-wrap items-center gap-2">
               <TimelineStatusBadge status={item.previousStatus} />
-              <span className="text-xs font-medium text-slate-400">to</span>
+              <span className="text-xs font-medium text-subtle">to</span>
               <TimelineStatusBadge status={item.newStatus} />
             </div>
           ) : null}
         </div>
 
         {isRevision ? (
-          <p className="mt-3 text-sm leading-6 text-slate-600">
+          <p className="mt-3 text-sm leading-6 text-muted">
             {item.changeSummary ?? 'No revision summary provided.'}
           </p>
         ) : (
           <>
-            <p className="mt-3 text-sm leading-6 text-slate-600">
+            <p className="mt-3 text-sm leading-6 text-muted">
               {item.description ?? 'No event description provided.'}
             </p>
             <div className="mt-3">
@@ -218,9 +218,9 @@ function SourceList({ documents, sources }: { documents: Document[]; sources: Po
       {hasSources ? (
         <div className="space-y-3">
           {sources.map((source) => (
-            <div className="rounded-md border border-slate-200 p-3" key={source.id}>
+            <div className="rounded-panel border border-line bg-surface-raised p-3" key={source.id}>
               <ExternalRecordLink href={source.sourceUrl} label={source.sourceName} />
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-muted">
                 Published {formatDate(source.publishedDate)}
               </p>
             </div>
@@ -231,9 +231,9 @@ function SourceList({ documents, sources }: { documents: Document[]; sources: Po
       {hasDocuments ? (
         <div className="space-y-3">
           {documents.map((document) => (
-            <div className="rounded-md border border-slate-200 p-3" key={document.id}>
+            <div className="rounded-panel border border-line bg-surface-raised p-3" key={document.id}>
               <ExternalRecordLink href={document.url} label={document.title} />
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-muted">
                 {document.documentType} - {formatDate(document.publishedDate)}
               </p>
             </div>
@@ -252,11 +252,11 @@ function TechnologyList({ technologies }: { technologies: PolicyTechnology[] }) 
   return (
     <div className="space-y-3">
       {technologies.map(({ id, technology }) => (
-        <div className="rounded-md border border-slate-200 p-3" key={id}>
-          <p className="text-sm font-semibold text-slate-950">{technology.name}</p>
-          <p className="mt-1 text-xs font-medium text-slate-500">{technology.category.name}</p>
+        <div className="rounded-panel border border-line bg-surface-raised p-3" key={id}>
+          <p className="text-sm font-semibold text-ink">{technology.name}</p>
+          <p className="mt-1 text-xs font-medium text-muted">{technology.category.name}</p>
           {technology.description ? (
-            <p className="mt-2 text-sm leading-6 text-slate-600">{technology.description}</p>
+            <p className="mt-2 text-sm leading-6 text-muted">{technology.description}</p>
           ) : null}
         </div>
       ))}
@@ -272,16 +272,16 @@ function CompanyList({ companies }: { companies: PolicyCompany[] }) {
   return (
     <div className="space-y-3">
       {companies.map(({ company, id }) => (
-        <div className="rounded-md border border-slate-200 p-3" key={id}>
+        <div className="rounded-panel border border-line bg-surface-raised p-3" key={id}>
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-slate-950">{company.name}</p>
-              <p className="mt-1 text-xs text-slate-500">{company.hqCountry.name}</p>
+              <p className="text-sm font-semibold text-ink">{company.name}</p>
+              <p className="mt-1 text-xs text-muted">{company.hqCountry.name}</p>
             </div>
             {company.entityListStatus ? <Badge tone="slate">{company.entityListStatus}</Badge> : null}
           </div>
           {company.aliases.length ? (
-            <p className="mt-2 text-sm text-slate-600">{company.aliases.join(', ')}</p>
+            <p className="mt-2 text-sm text-muted">{company.aliases.join(', ')}</p>
           ) : null}
         </div>
       ))}
@@ -299,10 +299,10 @@ function JurisdictionList({ jurisdictions }: { jurisdictions: Jurisdiction[] }) 
   return (
     <div className="space-y-3">
       {rows.map((jurisdiction) => (
-        <div className="flex items-start justify-between gap-3 rounded-md border border-slate-200 p-3" key={jurisdiction.id}>
+        <div className="flex items-start justify-between gap-3 rounded-panel border border-line bg-surface-raised p-3" key={jurisdiction.id}>
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-slate-950">{jurisdiction.country.name}</p>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="text-sm font-semibold text-ink">{jurisdiction.country.name}</p>
+            <p className="mt-1 text-xs text-muted">
               {jurisdiction.country.tierClassification ?? jurisdiction.country.isoCode}
             </p>
           </div>
@@ -401,7 +401,7 @@ export function PolicyDetailPage({ policyId }: PolicyDetailPageProps) {
       actions={
         <>
           <Link
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-4 text-sm font-medium text-slate-900 shadow-sm transition-colors hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-500"
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-control border border-line-strong bg-surface px-4 text-sm font-medium text-ink shadow-control transition-colors hover:bg-surface-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
             href="/policies"
           >
             <ArrowLeft aria-hidden="true" size={16} strokeWidth={2} />
@@ -428,8 +428,8 @@ export function PolicyDetailPage({ policyId }: PolicyDetailPageProps) {
       userName={getDisplayName(user?.email)}
     >
       {error ? (
-        <Panel className="mb-5 border-red-200 bg-red-50" title="Policy detail unavailable">
-          <div className="flex gap-3 text-sm text-red-800">
+        <Panel className="mb-5 border-danger-line bg-danger-soft" title="Policy detail unavailable">
+          <div className="flex gap-3 text-sm text-danger">
             <ShieldAlert aria-hidden="true" className="mt-0.5 size-4 shrink-0" strokeWidth={2} />
             <p>{error}</p>
           </div>
@@ -438,7 +438,7 @@ export function PolicyDetailPage({ policyId }: PolicyDetailPageProps) {
 
       {isLoading ? (
         <Panel>
-          <div className="flex items-center gap-3 text-sm text-slate-500">
+          <div className="flex items-center gap-3 text-sm text-muted">
             <Spinner label="Loading policy detail" />
             <span>Loading policy detail</span>
           </div>
@@ -451,39 +451,39 @@ export function PolicyDetailPage({ policyId }: PolicyDetailPageProps) {
               title="Policy Overview"
             >
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                <div className="rounded-md border border-slate-200 p-3">
-                  <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase text-slate-500">
+                <div className="rounded-panel border border-line bg-surface-raised p-3">
+                  <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase text-muted">
                     <FileText aria-hidden="true" size={14} strokeWidth={2} />
                     Control
                   </p>
-                  <p className="mt-2 text-sm font-semibold text-slate-950">
+                  <p className="mt-2 text-sm font-semibold text-ink">
                     {policy.controlNumber ?? 'Not assigned'}
                   </p>
                 </div>
-                <div className="rounded-md border border-slate-200 p-3">
-                  <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase text-slate-500">
+                <div className="rounded-panel border border-line bg-surface-raised p-3">
+                  <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase text-muted">
                     <CalendarDays aria-hidden="true" size={14} strokeWidth={2} />
                     Effective
                   </p>
-                  <p className="mt-2 text-sm font-semibold text-slate-950">
+                  <p className="mt-2 text-sm font-semibold text-ink">
                     {formatDate(policy.effectiveDate)}
                   </p>
                 </div>
-                <div className="rounded-md border border-slate-200 p-3">
-                  <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase text-slate-500">
+                <div className="rounded-panel border border-line bg-surface-raised p-3">
+                  <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase text-muted">
                     <Landmark aria-hidden="true" size={14} strokeWidth={2} />
                     Source
                   </p>
-                  <p className="mt-2 text-sm font-semibold text-slate-950">
+                  <p className="mt-2 text-sm font-semibold text-ink">
                     {primarySource?.sourceName ?? 'Source pending'}
                   </p>
                 </div>
-                <div className="rounded-md border border-slate-200 p-3">
-                  <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase text-slate-500">
+                <div className="rounded-panel border border-line bg-surface-raised p-3">
+                  <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase text-muted">
                     <GitBranch aria-hidden="true" size={14} strokeWidth={2} />
                     Timeline
                   </p>
-                  <p className="mt-2 text-sm font-semibold text-slate-950">
+                  <p className="mt-2 text-sm font-semibold text-ink">
                     {formatCount(timelineItems.length)} events
                   </p>
                 </div>
@@ -496,7 +496,7 @@ export function PolicyDetailPage({ policyId }: PolicyDetailPageProps) {
               title="Policy Timeline"
             >
               {timelineItems.length ? (
-                <ol className="relative space-y-4 before:absolute before:left-4 before:top-2 before:h-[calc(100%-1rem)] before:w-px before:bg-slate-200">
+                <ol className="relative space-y-4 before:absolute before:left-4 before:top-2 before:h-[calc(100%-1rem)] before:w-px before:bg-line">
                   {timelineItems.map((item) => (
                     <TimelineEntry item={item} key={`${item.type}-${item.id}`} />
                   ))}
@@ -540,22 +540,22 @@ export function PolicyDetailPage({ policyId }: PolicyDetailPageProps) {
             </Panel>
 
             <Panel description="Database metadata for the selected policy." title="Record Metadata">
-              <div className="space-y-3 text-sm text-slate-600">
+              <div className="space-y-3 text-sm text-muted">
                 <div className="flex items-center justify-between gap-3">
                   <span>Created</span>
-                  <span className="font-semibold text-slate-950">{formatDate(policy.createdAt)}</span>
+                  <span className="font-semibold text-ink">{formatDate(policy.createdAt)}</span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
                   <span>Updated</span>
-                  <span className="font-semibold text-slate-950">{formatDate(policy.updatedAt)}</span>
+                  <span className="font-semibold text-ink">{formatDate(policy.updatedAt)}</span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
                   <span>Revisions</span>
-                  <span className="font-semibold text-slate-950">{formatCount(policy.revisions.length)}</span>
+                  <span className="font-semibold text-ink">{formatCount(policy.revisions.length)}</span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
                   <span>Events</span>
-                  <span className="font-semibold text-slate-950">
+                  <span className="font-semibold text-ink">
                     {formatCount(policy.timelineEvents.length)}
                   </span>
                 </div>
@@ -565,21 +565,21 @@ export function PolicyDetailPage({ policyId }: PolicyDetailPageProps) {
             <Panel description="Linked entity counts for this record." title="Coverage">
               <div className="space-y-3">
                 <div className="flex items-center justify-between gap-3">
-                  <span className="inline-flex items-center gap-2 text-sm text-slate-600">
+                  <span className="inline-flex items-center gap-2 text-sm text-muted">
                     <Cpu aria-hidden="true" size={16} strokeWidth={2} />
                     Technologies
                   </span>
                   <Badge tone="sky">{formatCount(policy.technologies.length)}</Badge>
                 </div>
                 <div className="flex items-center justify-between gap-3">
-                  <span className="inline-flex items-center gap-2 text-sm text-slate-600">
+                  <span className="inline-flex items-center gap-2 text-sm text-muted">
                     <Building2 aria-hidden="true" size={16} strokeWidth={2} />
                     Companies
                   </span>
                   <Badge tone="emerald">{formatCount(policy.companies.length)}</Badge>
                 </div>
                 <div className="flex items-center justify-between gap-3">
-                  <span className="inline-flex items-center gap-2 text-sm text-slate-600">
+                  <span className="inline-flex items-center gap-2 text-sm text-muted">
                     <Globe2 aria-hidden="true" size={16} strokeWidth={2} />
                     Jurisdictions
                   </span>

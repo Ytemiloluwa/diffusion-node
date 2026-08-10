@@ -42,12 +42,12 @@ function SkeletonRows<Row>({
   rowCount: number;
 }) {
   return Array.from({ length: rowCount }, (_, index) => (
-    <tr className="border-b border-slate-200 last:border-0" key={index}>
+    <tr className="border-b border-line last:border-0" key={index}>
       {columns.map((column) => (
         <td className="px-4 py-4" key={column.id}>
           <span
             className={cn(
-              'block h-4 rounded-md bg-slate-200',
+              'block h-4 rounded-control bg-line',
               column.align === 'right' ? 'ml-auto' : undefined,
               column.align === 'center' ? 'mx-auto' : undefined,
               column.width ? undefined : 'w-24',
@@ -75,13 +75,13 @@ export function DataTable<Row>({
   return (
     <section
       aria-busy={isLoading}
-      className={cn('overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm', className)}
+      className={cn('overflow-hidden rounded-panel border border-line bg-surface shadow-panel', className)}
     >
       {title || description || actions ? (
-        <header className="flex flex-col gap-3 border-b border-slate-200 px-4 py-3 sm:flex-row sm:items-start sm:justify-between">
+        <header className="flex flex-col gap-3 border-b border-line px-4 py-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
-            {title ? <h2 className="text-base font-semibold text-slate-950">{title}</h2> : null}
-            {description ? <p className="mt-1 text-sm leading-6 text-slate-500">{description}</p> : null}
+            {title ? <h2 className="text-base font-semibold text-ink">{title}</h2> : null}
+            {description ? <p className="mt-1 text-sm leading-6 text-muted">{description}</p> : null}
           </div>
           {actions ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}
         </header>
@@ -89,12 +89,12 @@ export function DataTable<Row>({
 
       <div className="overflow-x-auto">
         <table className="min-w-[56rem] w-full border-separate border-spacing-0 text-sm">
-          <thead className="bg-slate-50 text-xs font-semibold uppercase text-slate-500">
+          <thead className="bg-surface-muted text-xs font-semibold uppercase text-muted">
             <tr>
               {columns.map((column) => (
                 <th
                   className={cn(
-                    'border-b border-slate-200 px-4 py-3',
+                    'border-b border-line px-4 py-3',
                     alignClasses[column.align ?? 'left'],
                     column.headerClassName,
                   )}
@@ -107,17 +107,17 @@ export function DataTable<Row>({
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-200 text-slate-700">
+          <tbody className="divide-y divide-line text-ink-soft">
             {isLoading ? (
               <SkeletonRows columns={columns} rowCount={skeletonRowCount} />
             ) : rows.length ? (
               rows.map((row) => (
-                <tr className="transition-colors hover:bg-slate-50/80" key={rowKey(row)}>
+                <tr className="transition-colors hover:bg-surface-muted/80" key={rowKey(row)}>
                   {columns.map((column) =>
                     column.isRowHeader ? (
                       <th
                         className={cn(
-                          'px-4 py-3 font-medium text-slate-950',
+                          'px-4 py-3 font-medium text-ink',
                           alignClasses[column.align ?? 'left'],
                           column.className,
                         )}
@@ -145,7 +145,7 @@ export function DataTable<Row>({
               ))
             ) : (
               <tr>
-                <td className="px-4 py-10 text-center text-sm text-slate-500" colSpan={columns.length}>
+                <td className="px-4 py-10 text-center text-sm text-muted" colSpan={columns.length}>
                   <div className="flex flex-col items-center gap-3">
                     {isLoading ? <Spinner label="Loading records" /> : null}
                     <span>{emptyState}</span>

@@ -6,11 +6,11 @@ type ButtonVariant = 'danger' | 'ghost' | 'primary' | 'secondary';
 type ButtonSize = 'lg' | 'md' | 'sm';
 
 const variantClasses: Record<ButtonVariant, string> = {
-  danger: 'bg-red-700 text-white hover:bg-red-800 focus-visible:outline-red-700',
-  ghost: 'bg-transparent text-slate-700 hover:bg-slate-100 focus-visible:outline-slate-500',
-  primary: 'bg-slate-950 text-white hover:bg-slate-800 focus-visible:outline-slate-950',
+  danger: 'bg-danger text-brand-contrast hover:bg-danger-hover focus-visible:outline-danger',
+  ghost: 'bg-transparent text-ink-soft hover:bg-surface-muted focus-visible:outline-focus',
+  primary: 'bg-brand text-brand-contrast hover:bg-brand-hover focus-visible:outline-focus',
   secondary:
-    'border border-slate-300 bg-white text-slate-900 hover:bg-slate-50 focus-visible:outline-slate-500',
+    'border border-line-strong bg-surface text-ink hover:bg-surface-muted focus-visible:outline-focus',
 };
 
 const sizeClasses: Record<ButtonSize, string> = {
@@ -43,7 +43,7 @@ export function Button({
     <button
       aria-busy={isLoading}
       className={cn(
-        'inline-flex items-center justify-center gap-2 rounded-md font-medium transition-colors',
+        'inline-flex items-center justify-center gap-2 rounded-control font-medium shadow-control transition-colors',
         'disabled:pointer-events-none disabled:opacity-50',
         'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
         sizeClasses[size],
