@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
@@ -212,7 +213,12 @@ const policyColumns: DataTableColumn<Policy>[] = [
   {
     cell: (policy) => (
       <div>
-        <p className="font-semibold text-slate-950">{policy.title}</p>
+        <Link
+          className="font-semibold text-slate-950 hover:text-teal-800"
+          href={`/policies/${policy.id}`}
+        >
+          {policy.title}
+        </Link>
         <p className="mt-1 text-xs text-slate-500">{getPolicySourceName(policy)}</p>
       </div>
     ),
@@ -596,6 +602,14 @@ export function PolicyExplorerPage() {
             ) : policies.length ? (
               policies.slice(0, 3).map((policy) => (
                 <PolicyCard
+                  actions={
+                    <Link
+                      className="inline-flex h-8 items-center justify-center rounded-md border border-slate-300 bg-white px-3 text-sm font-medium text-slate-900 transition-colors hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-500"
+                      href={`/policies/${policy.id}`}
+                    >
+                      Details
+                    </Link>
+                  }
                   companies={getPolicyCompanyNames(policy).slice(0, 4)}
                   controlNumber={policy.controlNumber ?? undefined}
                   countries={getPolicyCountryNames(policy).slice(0, 4)}
