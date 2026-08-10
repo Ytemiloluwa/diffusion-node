@@ -7,6 +7,15 @@ interface RequestSchemas {
   query?: z.ZodType;
 }
 
+const setParsedQuery = (req: Request, query: unknown): void => {
+  Object.defineProperty(req, 'query', {
+    configurable: true,
+    enumerable: true,
+    value: query,
+    writable: true,
+  });
+};
+
 export const validateRequest =
   (schemas: RequestSchemas): RequestHandler =>
   (req: Request, _res: Response, next: NextFunction) => {
@@ -19,7 +28,7 @@ export const validateRequest =
     }
 
     if (schemas.query) {
-      req.query = schemas.query.parse(req.query) as Request['query'];
+      setParsedQuery(req, schemas.query.parse(req.query));
     }
 
     next();
