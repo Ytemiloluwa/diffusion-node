@@ -1,214 +1,466 @@
-import { ArrowRight, CalendarDays, ExternalLink, FileText, ShieldAlert } from 'lucide-react';
-import { Badge, Button, Panel } from '@/components/atoms';
+'use client';
+
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import {
+  Building2,
+  CalendarDays,
+  Cpu,
+  Database,
+  ExternalLink,
+  Globe2,
+  RefreshCw,
+  ShieldAlert,
+} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import { Badge, Button, Panel, Spinner, type BadgeProps } from '@/components/atoms';
 import { PolicyCard } from '@/components/molecules';
 import { DataTable, type DataTableColumn } from '@/components/organisms';
 import { DashboardShell } from '@/components/templates';
+import {
+  listCompanies,
+  listCountries,
+  listPolicies,
+  listTechnologies,
+  listTimeline,
+  type Company,
+  type CountryWithRestrictionSummary,
+  type Policy,
+  type PolicyStatus,
+  type Technology,
+  type TimelineEventWithPolicy,
+} from '@/lib/api';
+import { useAuthStore } from '@/store';
 
-const metrics = [
-  { label: 'Tracked policies', value: '128', detail: '+12 this month', tone: 'emerald' },
-  { label: 'High exposure technologies', value: '34', detail: '8 contested links', tone: 'amber' },
-  { label: 'Affected companies', value: '428', detail: '24 added in latest update', tone: 'sky' },
-  { label: 'Jurisdictions monitored', value: '17', detail: '5 priority countries', tone: 'slate' },
-] as const;
+const DASHBOARD_PAGE_LIMIT = 100;
+const TIMELINE_LIMIT = 6;
+const RECENT_POLICY_LIMIT = 3;
 
-const timelineEvents = [
-  {
-    date: 'May 16, 2025',
-    label: 'Federal Register publication',
-    source: 'Interim Final Rule',
-    status: 'Active',
-  },
-  {
-    date: 'May 12, 2025',
-    label: 'BIS Entity List update',
-    source: '18 entities added',
-    status: 'Active',
-  },
-  {
-    date: 'May 6, 2025',
-    label: 'License review policy revision',
-    source: 'AI Diffusion Framework',
-    status: 'Contested',
-  },
-];
-
-const countryExposure = [
-  { country: 'China', count: 51, level: 'High' },
-  { country: 'Russia', count: 22, level: 'High' },
-  { country: 'Iran', count: 14, level: 'Medium' },
-  { country: 'North Korea', count: 9, level: 'Medium' },
-];
-
-type PolicyRow = {
-  companies: number;
-  effectiveDate: string;
-  id: string;
-  policy: string;
-  risk: 'High' | 'Medium';
-  source: string;
-  status: 'Active' | 'Contested' | 'Draft';
-  technologies: string;
+type DashboardData = {
+  companies: Company[];
+  countries: CountryWithRestrictionSummary[];
+  hasMoreCompanies: boolean;
+  hasMoreCountries: boolean;
+  hasMorePolicies: boolean;
+  hasMoreTechnologies: boolean;
+  policies: Policy[];
+  technologies: Technology[];
+  timeline: TimelineEventWithPolicy[];
 };
 
-const policyRows: PolicyRow[] = [
-  {
-    companies: 428,
-    effectiveDate: 'May 20, 2025',
-    id: 'advanced-computing-controls',
-    policy: 'Advanced Computing Export Controls',
-    risk: 'High',
-    source: 'Federal Register',
-    status: 'Active',
-    technologies: 'AI Accelerators, HBM',
-  },
-  {
-    companies: 312,
-    effectiveDate: 'May 12, 2025',
-    id: 'entity-list-additions',
-    policy: 'BIS Entity List Additions',
-    risk: 'High',
-    source: 'BIS Entity List',
-    status: 'Active',
-    technologies: 'Integrated Circuits',
-  },
-  {
-    companies: 267,
-    effectiveDate: 'May 6, 2025',
-    id: 'license-review-revision',
-    policy: 'License Review Policy Revision',
-    risk: 'Medium',
-    source: 'AI Diffusion Framework',
-    status: 'Contested',
-    technologies: 'EDA Software',
-  },
-  {
-    companies: 198,
-    effectiveDate: 'Apr 28, 2025',
-    id: 'reporting-non-enforcement',
-    policy: 'Temporary Non-Enforcement Notice',
-    risk: 'Medium',
-    source: 'BIS Notice',
-    status: 'Draft',
-    technologies: 'Advanced Computing',
-  },
+type MetricTone = 'amber' | 'emerald' | 'sky' | 'slate';
+
+type Metric = {
+  detail: string;
+  icon: LucideIcon;
+  label: string;
+  tone: MetricTone;
+  value: string;
+};
+
+const emptyDashboardData: DashboardData = {
+  companies: [],
+  countries: [],
+  hasMoreCompanies: false,
+  hasMoreCountries: false,
+  hasMorePolicies: false,
+  hasMoreTechnologies: false,
+  policies: [],
+  technologies: [],
+  timeline: [],
+};
+
+const statusLabels: Record<PolicyStatus, string> = {
+  ACTIVE: 'Active',
+  CONTESTED: 'Contested',
+  DRAFT: 'Draft',
+  RESCINDED: 'Rescinded',
+  SUPERSEDED: 'Superseded',
+};
+
+const statusTones: Record<PolicyStatus, BadgeProps['tone']> = {
+  ACTIVE: 'emerald',
+  CONTESTED: 'amber',
+  DRAFT: 'slate',
+  RESCINDED: 'red',
+  SUPERSEDED: 'sky',
+};
+
+const metricToneClasses: Record<MetricTone, string> = {
+  amber: 'bg-amber-50 text-amber-800 ring-amber-200',
+  emerald: 'bg-emerald-50 text-emerald-800 ring-emerald-200',
+  sky: 'bg-sky-50 text-sky-800 ring-sky-200',
+  slate: 'bg-slate-100 text-slate-800 ring-slate-200',
+};
+
+const formatDate = (value?: string | null): string => {
+  if (!value) {
+    return 'Not set';
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat('en-US', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  }).format(date);
+};
+
+const formatCount = (value: number): string => value.toLocaleString('en-US');
+
+const getPolicySourceName = (policy: Policy): string =>
+  policy.sources[0]?.sourceName ?? policy.documents[0]?.documentType ?? 'Source pending';
+
+const getPolicyTechnologyNames = (policy: Policy): string[] =>
+  policy.technologies.map(({ technology }) => technology.name);
+
+const getPolicyCompanyNames = (policy: Policy): string[] =>
+  policy.companies.map(({ company }) => company.name);
+
+const getPolicyCountryNames = (policy: Policy): string[] => [
+  ...new Set(policy.jurisdictions.map(({ country }) => country.name)),
 ];
 
-const policyColumns: DataTableColumn<PolicyRow>[] = [
+const getRestrictionCount = (country: CountryWithRestrictionSummary): number =>
+  Object.values(country.restrictionSummary).reduce((total, count) => total + count, 0);
+
+const toErrorMessage = (error: unknown): string => {
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return 'Dashboard data could not be loaded.';
+};
+
+const getDisplayName = (email?: string): string => {
+  if (!email) {
+    return 'Analyst';
+  }
+
+  const localPart = email.split('@')[0] ?? email;
+  const words = localPart
+    .split(/[._-]+/)
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1));
+
+  return words.length ? words.join(' ') : email;
+};
+
+const getInitials = (email?: string): string => {
+  if (!email) {
+    return 'DN';
+  }
+
+  const words = email.split('@')[0]?.split(/[._-]+/).filter(Boolean) ?? [];
+  const initials = words.map((word) => word.charAt(0).toUpperCase()).join('');
+
+  return (initials || email.slice(0, 2).toUpperCase()).slice(0, 2);
+};
+
+const policyColumns: DataTableColumn<Policy>[] = [
   {
-    cell: (row) => (
+    cell: (policy) => (
       <div>
-        <p className="font-semibold text-slate-950">{row.policy}</p>
-        <p className="mt-1 text-xs text-slate-500">{row.source}</p>
+        <p className="font-semibold text-slate-950">{policy.title}</p>
+        <p className="mt-1 text-xs text-slate-500">{getPolicySourceName(policy)}</p>
       </div>
     ),
     header: 'Policy',
     id: 'policy',
     isRowHeader: true,
-    width: '30%',
+    width: '32%',
   },
   {
-    cell: (row) => row.technologies,
+    cell: (policy) => {
+      const technologies = getPolicyTechnologyNames(policy);
+      return technologies.length ? technologies.slice(0, 3).join(', ') : 'No linked technologies';
+    },
     header: 'Technologies',
     id: 'technologies',
-    width: '22%',
+    width: '24%',
   },
   {
     align: 'right',
-    cell: (row) => row.companies.toLocaleString(),
+    cell: (policy) => formatCount(policy.companies.length),
     header: 'Companies',
     id: 'companies',
     width: '11%',
   },
   {
-    cell: (row) => <Badge tone={row.risk === 'High' ? 'red' : 'amber'}>{row.risk}</Badge>,
-    header: 'Risk',
-    id: 'risk',
-    width: '10%',
+    cell: (policy) => {
+      const countries = getPolicyCountryNames(policy);
+      return countries.length ? countries.slice(0, 2).join(', ') : 'No country links';
+    },
+    header: 'Countries',
+    id: 'countries',
+    width: '15%',
   },
   {
-    cell: (row) => (
-      <Badge
-        tone={row.status === 'Active' ? 'emerald' : row.status === 'Contested' ? 'amber' : 'slate'}
-      >
-        {row.status}
-      </Badge>
-    ),
+    cell: (policy) => <Badge tone={statusTones[policy.status]}>{statusLabels[policy.status]}</Badge>,
     header: 'Status',
     id: 'status',
-    width: '12%',
+    width: '9%',
   },
   {
-    cell: (row) => row.effectiveDate,
+    cell: (policy) => formatDate(policy.effectiveDate),
     header: 'Effective',
     id: 'effectiveDate',
-    width: '15%',
+    width: '9%',
   },
 ];
 
-const toneClasses = {
-  amber: 'bg-amber-50 text-amber-800 ring-amber-200',
-  emerald: 'bg-emerald-50 text-emerald-800 ring-emerald-200',
-  sky: 'bg-sky-50 text-sky-800 ring-sky-200',
-  slate: 'bg-slate-100 text-slate-800 ring-slate-200',
-} as const;
+function MetricCard({ detail, icon: Icon, label, tone, value }: Metric) {
+  return (
+    <section className="rounded-md border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-sm font-medium text-slate-500">{label}</p>
+          <p className="mt-3 text-3xl font-semibold tracking-normal text-slate-950">{value}</p>
+        </div>
+        <span
+          className={`flex size-10 shrink-0 items-center justify-center rounded-md ring-1 ring-inset ${metricToneClasses[tone]}`}
+        >
+          <Icon aria-hidden="true" size={19} strokeWidth={2} />
+        </span>
+      </div>
+      <p className="mt-3 text-sm text-slate-500">{detail}</p>
+    </section>
+  );
+}
 
 export function DashboardPage() {
+  const router = useRouter();
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const loadProfile = useAuthStore((state) => state.loadProfile);
+  const user = useAuthStore((state) => state.user);
+  const [hasHydrated, setHasHydrated] = useState(false);
+  const [data, setData] = useState<DashboardData>(emptyDashboardData);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const loadDashboardData = useCallback(async () => {
+    if (!useAuthStore.getState().accessToken) {
+      router.replace('/auth');
+      return;
+    }
+
+    setError(null);
+    setIsLoading(true);
+
+    try {
+      const profile = await loadProfile();
+
+      if (!profile) {
+        router.replace('/auth');
+        return;
+      }
+
+      const [policiesPage, timelinePage, companiesPage, countriesPage, technologiesPage] =
+        await Promise.all([
+          listPolicies({ limit: DASHBOARD_PAGE_LIMIT }),
+          listTimeline({ limit: TIMELINE_LIMIT }),
+          listCompanies({ limit: DASHBOARD_PAGE_LIMIT }),
+          listCountries({ limit: DASHBOARD_PAGE_LIMIT }),
+          listTechnologies({ limit: DASHBOARD_PAGE_LIMIT }),
+        ]);
+
+      setData({
+        companies: companiesPage.data,
+        countries: countriesPage.data,
+        hasMoreCompanies: companiesPage.pageInfo.hasNextPage,
+        hasMoreCountries: countriesPage.pageInfo.hasNextPage,
+        hasMorePolicies: policiesPage.pageInfo.hasNextPage,
+        hasMoreTechnologies: technologiesPage.pageInfo.hasNextPage,
+        policies: policiesPage.data,
+        technologies: technologiesPage.data,
+        timeline: timelinePage.data,
+      });
+    } catch (loadError) {
+      setError(toErrorMessage(loadError));
+    } finally {
+      setIsLoading(false);
+    }
+  }, [loadProfile, router]);
+
+  useEffect(() => {
+    const persistApi = useAuthStore.persist;
+    const hydrationTimer = window.setTimeout(() => {
+      setHasHydrated(persistApi.hasHydrated());
+    }, 0);
+    const unsubscribe = persistApi.onFinishHydration(() => {
+      setHasHydrated(true);
+    });
+
+    return () => {
+      window.clearTimeout(hydrationTimer);
+      unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!hasHydrated) {
+      return;
+    }
+
+    if (!accessToken) {
+      router.replace('/auth');
+      return;
+    }
+
+    const loadTimer = window.setTimeout(() => {
+      void loadDashboardData();
+    }, 0);
+
+    return () => window.clearTimeout(loadTimer);
+  }, [accessToken, hasHydrated, loadDashboardData, router]);
+
+  const statusCounts = useMemo(
+    () =>
+      data.policies.reduce<Record<PolicyStatus, number>>(
+        (counts, policy) => ({
+          ...counts,
+          [policy.status]: counts[policy.status] + 1,
+        }),
+        {
+          ACTIVE: 0,
+          CONTESTED: 0,
+          DRAFT: 0,
+          RESCINDED: 0,
+          SUPERSEDED: 0,
+        },
+      ),
+    [data.policies],
+  );
+
+  const metrics = useMemo<Metric[]>(() => {
+    const linkedTechnologyCount = new Set(
+      data.policies.flatMap((policy) => policy.technologies.map(({ technologyId }) => technologyId)),
+    ).size;
+    const linkedCompanyCount = new Set(
+      data.policies.flatMap((policy) => policy.companies.map(({ companyId }) => companyId)),
+    ).size;
+    const restrictedCountryCount = data.countries.filter((country) => getRestrictionCount(country) > 0)
+      .length;
+
+    return [
+      {
+        detail: data.hasMorePolicies ? 'Showing the first 100 records' : 'Loaded from policy API',
+        icon: Database,
+        label: 'Policies loaded',
+        tone: 'slate',
+        value: formatCount(data.policies.length),
+      },
+      {
+        detail: `${formatCount(data.technologies.length)} technology records in scope`,
+        icon: Cpu,
+        label: 'Linked technologies',
+        tone: 'sky',
+        value: formatCount(linkedTechnologyCount),
+      },
+      {
+        detail: `${formatCount(data.companies.length)} company records in scope`,
+        icon: Building2,
+        label: 'Linked companies',
+        tone: 'emerald',
+        value: formatCount(linkedCompanyCount),
+      },
+      {
+        detail: data.hasMoreCountries ? 'Showing the first 100 countries' : 'Countries with policy links',
+        icon: Globe2,
+        label: 'Restricted countries',
+        tone: 'amber',
+        value: formatCount(restrictedCountryCount),
+      },
+    ];
+  }, [data]);
+
+  const recentPolicies = useMemo(
+    () =>
+      [...data.policies]
+        .sort((left, right) => {
+          const leftDate = new Date(left.effectiveDate ?? left.updatedAt).getTime();
+          const rightDate = new Date(right.effectiveDate ?? right.updatedAt).getTime();
+
+          return rightDate - leftDate;
+        })
+        .slice(0, RECENT_POLICY_LIMIT),
+    [data.policies],
+  );
+
+  const topCountries = useMemo(
+    () =>
+      [...data.countries]
+        .map((country) => ({ country, restrictionCount: getRestrictionCount(country) }))
+        .filter(({ restrictionCount }) => restrictionCount > 0)
+        .sort((left, right) => right.restrictionCount - left.restrictionCount)
+        .slice(0, 5),
+    [data.countries],
+  );
+
   return (
     <DashboardShell
       actions={
-        <>
-          <Button
-            leadingIcon={<FileText aria-hidden="true" size={16} strokeWidth={2} />}
-            variant="secondary"
-          >
-            Export brief
-          </Button>
-          <Button trailingIcon={<ArrowRight aria-hidden="true" size={16} strokeWidth={2} />}>
-            Open Policy Explorer
-          </Button>
-        </>
+        <Button
+          isLoading={isLoading}
+          leadingIcon={<RefreshCw aria-hidden="true" size={16} strokeWidth={2} />}
+          onClick={() => void loadDashboardData()}
+          variant="secondary"
+        >
+          Refresh data
+        </Button>
       }
       activeItem="dashboard"
       description="Track semiconductor and AI export-control policy changes, affected technologies, companies, and jurisdictions from one analyst workspace."
       eyebrow="Policy intelligence"
       title="Dashboard"
+      userInitials={getInitials(user?.email)}
+      userName={getDisplayName(user?.email)}
     >
+      {error ? (
+        <Panel className="mb-5 border-red-200 bg-red-50" title="Dashboard data unavailable">
+          <div className="flex gap-3 text-sm text-red-800">
+            <ShieldAlert aria-hidden="true" className="mt-0.5 size-4 shrink-0" strokeWidth={2} />
+            <p>{error}</p>
+          </div>
+        </Panel>
+      ) : null}
+
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {metrics.map((metric) => (
-          <section
-            className="rounded-md border border-slate-200 bg-white p-4 shadow-sm"
-            key={metric.label}
-          >
-            <p className="text-sm font-medium text-slate-500">{metric.label}</p>
-            <div className="mt-3 flex items-end justify-between gap-3">
-              <p className="text-3xl font-semibold tracking-normal text-slate-950">
-                {metric.value}
-              </p>
-              <span
-                className={`inline-flex min-h-6 items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${toneClasses[metric.tone]}`}
+        {isLoading
+          ? Array.from({ length: 4 }, (_, index) => (
+              <section
+                aria-hidden="true"
+                className="rounded-md border border-slate-200 bg-white p-4 shadow-sm"
+                key={index}
               >
-                {metric.detail}
-              </span>
-            </div>
-          </section>
-        ))}
+                <div className="h-4 w-28 rounded-md bg-slate-200" />
+                <div className="mt-4 h-8 w-16 rounded-md bg-slate-200" />
+                <div className="mt-4 h-4 w-40 rounded-md bg-slate-200" />
+              </section>
+            ))
+          : metrics.map((metric) => <MetricCard key={metric.label} {...metric} />)}
       </div>
 
       <DataTable
         actions={
-          <Button
-            size="sm"
-            trailingIcon={<ExternalLink aria-hidden="true" size={14} strokeWidth={2} />}
-            variant="secondary"
-          >
-            Open table
-          </Button>
+          <Badge tone={data.hasMorePolicies ? 'amber' : 'slate'}>
+            {data.hasMorePolicies
+              ? `First ${DASHBOARD_PAGE_LIMIT} records`
+              : `${formatCount(data.policies.length)} records`}
+          </Badge>
         }
         className="mt-5"
         columns={policyColumns}
-        description="A compact policy table preview for analyst workflows and upcoming explorer screens."
-        rowKey={(row) => row.id}
-        rows={policyRows}
+        description="Policy records returned by the Phase 2 search API."
+        emptyState="No policy records returned by the API."
+        isLoading={isLoading}
+        rowKey={(policy) => policy.id}
+        rows={data.policies.slice(0, 8)}
         title="Policy Records"
       />
 
@@ -216,104 +468,130 @@ export function DashboardPage() {
         <section className="space-y-3">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-slate-950">Policy Watch</h2>
+              <h2 className="text-lg font-semibold text-slate-950">Recent Policy Movement</h2>
               <p className="mt-1 text-sm text-slate-600">
-                Policies with material technology, company, or jurisdiction movement.
+                Policies sorted from the latest effective or updated date returned by the API.
               </p>
             </div>
-            <Badge tone="amber">3 priority updates</Badge>
+            <Badge tone="slate">{formatCount(recentPolicies.length)} shown</Badge>
           </div>
-          <PolicyCard
-            companies={['NVIDIA', 'AMD', 'Huawei']}
-            controlNumber="90 FR 4544"
-            countries={['China', 'Russia']}
-            effectiveDate="May 20, 2025"
-            sourceName="Federal Register"
-            status="ACTIVE"
-            summary="Strengthens export controls on advanced computing items and links new license review posture to high-performance AI accelerator supply chains."
-            technologies={['AI Accelerators', 'High-Bandwidth Memory']}
-            title="Advanced Computing Export Controls"
-          />
-          <PolicyCard
-            companies={['SMIC', 'Cambricon']}
-            controlNumber="BIS-2025-0008"
-            countries={['China']}
-            effectiveDate="May 12, 2025"
-            sourceName="BIS Entity List"
-            status="CONTESTED"
-            summary="Adds semiconductor and AI infrastructure entities for activities contrary to U.S. national security and foreign policy interests."
-            technologies={['EDA Software', 'Manufacturing Equipment']}
-            title="BIS Entity List Additions"
-          />
+
+          {isLoading ? (
+            <Panel>
+              <div className="flex items-center gap-3 text-sm text-slate-500">
+                <Spinner label="Loading recent policies" />
+                <span>Loading recent policies</span>
+              </div>
+            </Panel>
+          ) : recentPolicies.length ? (
+            recentPolicies.map((policy) => (
+              <PolicyCard
+                companies={getPolicyCompanyNames(policy).slice(0, 4)}
+                controlNumber={policy.controlNumber ?? undefined}
+                countries={getPolicyCountryNames(policy).slice(0, 4)}
+                effectiveDate={formatDate(policy.effectiveDate)}
+                key={policy.id}
+                sourceName={getPolicySourceName(policy)}
+                status={policy.status}
+                summary={policy.summary ?? undefined}
+                technologies={getPolicyTechnologyNames(policy).slice(0, 4)}
+                title={policy.title}
+              />
+            ))
+          ) : (
+            <Panel>No recent policy records returned by the API.</Panel>
+          )}
         </section>
 
         <aside className="space-y-5">
           <Panel
-            actions={<Badge tone="emerald">Live</Badge>}
-            description="Recent source events connected to tracked policies."
+            actions={<Badge tone="emerald">API</Badge>}
+            description="Most recent timeline events returned by the timeline endpoint."
             title="Regulatory Timeline"
           >
-            <div className="space-y-4">
-              {timelineEvents.map((event) => (
-                <div className="flex gap-3" key={`${event.date}-${event.label}`}>
-                  <span className="mt-1 flex size-8 shrink-0 items-center justify-center rounded-md bg-teal-50 text-teal-700">
-                    <CalendarDays aria-hidden="true" size={16} strokeWidth={2} />
-                  </span>
-                  <div className="min-w-0 flex-1 border-b border-slate-200 pb-4 last:border-0 last:pb-0">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="text-sm font-semibold text-slate-950">{event.label}</p>
-                        <p className="mt-1 text-xs text-slate-500">{event.source}</p>
+            {isLoading ? (
+              <div className="flex items-center gap-3 text-sm text-slate-500">
+                <Spinner label="Loading timeline" />
+                <span>Loading timeline</span>
+              </div>
+            ) : data.timeline.length ? (
+              <div className="space-y-4">
+                {data.timeline.map((event) => (
+                  <div className="flex gap-3" key={event.id}>
+                    <span className="mt-1 flex size-8 shrink-0 items-center justify-center rounded-md bg-teal-50 text-teal-700">
+                      <CalendarDays aria-hidden="true" size={16} strokeWidth={2} />
+                    </span>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-slate-950">
+                        {event.policy?.title ?? event.eventType}
+                      </p>
+                      <p className="mt-1 text-sm text-slate-600">
+                        {event.description ?? event.eventType}
+                      </p>
+                      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500">
+                        <span>{formatDate(event.eventDate)}</span>
+                        {event.sourceUrl ? (
+                          <a
+                            className="inline-flex items-center gap-1 font-medium text-teal-800 hover:text-teal-900"
+                            href={event.sourceUrl}
+                            rel="noreferrer"
+                            target="_blank"
+                          >
+                            {event.sourceName ?? 'Source'}
+                            <ExternalLink aria-hidden="true" size={12} strokeWidth={2} />
+                          </a>
+                        ) : event.sourceName ? (
+                          <span>{event.sourceName}</span>
+                        ) : null}
                       </div>
-                      <Badge tone={event.status === 'Contested' ? 'amber' : 'emerald'}>
-                        {event.status}
-                      </Badge>
                     </div>
-                    <p className="mt-2 text-xs font-medium text-slate-500">{event.date}</p>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-slate-500">No timeline events returned by the API.</p>
+            )}
           </Panel>
 
           <Panel
-            actions={
-              <Button
-                size="sm"
-                trailingIcon={<ExternalLink aria-hidden="true" size={14} strokeWidth={2} />}
-                variant="ghost"
-              >
-                View all
-              </Button>
-            }
+            actions={<Badge tone="slate">{formatCount(topCountries.length)} shown</Badge>}
+            description="Countries ranked by linked restriction records."
             title="Country Exposure"
           >
-            <div className="space-y-3">
-              {countryExposure.map((item) => (
-                <div className="flex items-center justify-between gap-3" key={item.country}>
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-slate-950">{item.country}</p>
-                    <p className="text-xs text-slate-500">{item.count} linked records</p>
+            {isLoading ? (
+              <div className="flex items-center gap-3 text-sm text-slate-500">
+                <Spinner label="Loading countries" />
+                <span>Loading countries</span>
+              </div>
+            ) : topCountries.length ? (
+              <div className="space-y-3">
+                {topCountries.map(({ country, restrictionCount }) => (
+                  <div className="flex items-center justify-between gap-3" key={country.id}>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-slate-950">{country.name}</p>
+                      <p className="mt-1 text-xs text-slate-500">
+                        {country.tierClassification ?? country.isoCode}
+                      </p>
+                    </div>
+                    <Badge tone="amber">{formatCount(restrictionCount)} links</Badge>
                   </div>
-                  <Badge tone={item.level === 'High' ? 'red' : 'amber'}>{item.level}</Badge>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-slate-500">No linked country restrictions returned.</p>
+            )}
           </Panel>
 
-          <Panel title="Analyst Alert">
-            <div className="flex gap-3">
-              <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-amber-50 text-amber-700">
-                <ShieldAlert aria-hidden="true" size={18} strokeWidth={2} />
-              </span>
-              <div>
-                <p className="text-sm font-semibold text-slate-950">
-                  AI accelerator exposure remains elevated
-                </p>
-                <p className="mt-1 text-sm leading-6 text-slate-600">
-                  New license review changes affect 31 linked policies and 428 company records.
-                </p>
-              </div>
+          <Panel description="Current status distribution from loaded policy records." title="Policy Status">
+            <div className="space-y-3">
+              {(Object.keys(statusLabels) as PolicyStatus[]).map((status) => (
+                <div className="flex items-center justify-between gap-3" key={status}>
+                  <Badge tone={statusTones[status]}>{statusLabels[status]}</Badge>
+                  <span className="text-sm font-semibold text-slate-950">
+                    {formatCount(statusCounts[status])}
+                  </span>
+                </div>
+              ))}
             </div>
           </Panel>
         </aside>

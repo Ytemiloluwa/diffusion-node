@@ -9,6 +9,8 @@ export type DashboardShellProps = {
   description?: string;
   eyebrow?: string;
   title: string;
+  userInitials?: string;
+  userName?: string;
 };
 
 export function DashboardShell({
@@ -18,12 +20,14 @@ export function DashboardShell({
   description,
   eyebrow,
   title,
+  userInitials,
+  userName,
 }: DashboardShellProps) {
   return (
     <div className="min-h-screen bg-slate-100 text-slate-950 lg:grid lg:grid-cols-[16rem_minmax(0,1fr)]">
       <NavigationSidebar activeItem={activeItem} />
       <div className="min-w-0">
-        <AppHeader />
+        <AppHeader userInitials={userInitials} userName={userName} />
         <main className="px-4 py-6 sm:px-6 lg:px-8">
           <div className="mx-auto w-full max-w-[92rem]">
             <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
