@@ -62,7 +62,7 @@ export function SearchBar({
   };
 
   return (
-    <form className={cn('relative w-full', className)} onSubmit={handleSubmit} role="search">
+    <form className={cn('relative w-full min-w-0', className)} onSubmit={handleSubmit} role="search">
       <label className="sr-only" htmlFor={inputId}>
         {label}
       </label>
@@ -72,7 +72,7 @@ export function SearchBar({
       />
       <input
         className={cn(
-          'h-10 w-full rounded-control border border-line-strong bg-surface py-2 pl-9 pr-10 text-sm text-ink shadow-control transition-colors',
+          'h-10 w-full min-w-0 rounded-control border border-line-strong bg-surface py-2 pl-9 pr-10 text-sm text-ink shadow-control transition-colors',
           'placeholder:text-subtle disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-muted',
           'focus:border-focus focus:outline-none focus:ring-2 focus:ring-focus-soft',
         )}

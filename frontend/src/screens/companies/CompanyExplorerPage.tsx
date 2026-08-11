@@ -849,11 +849,11 @@ export function CompanyExplorerPage() {
             description="Refine company records by headquarters country and list status."
             title="Filters"
           >
-            <div className="grid gap-4">
-              <label className="grid gap-1.5">
+            <div className="grid min-w-0 gap-4">
+              <label className="grid min-w-0 gap-1.5">
                 <span className="text-sm font-medium text-ink-soft">Country</span>
                 <select
-                  className="h-10 rounded-control border border-line-strong bg-surface px-3 text-sm text-ink shadow-control transition-colors disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-muted focus:border-focus focus:outline-none focus:ring-2 focus:ring-focus-soft"
+                  className="h-10 w-full min-w-0 max-w-full rounded-control border border-line-strong bg-surface px-3 text-sm text-ink shadow-control transition-colors disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-muted focus:border-focus focus:outline-none focus:ring-2 focus:ring-focus-soft"
                   disabled={isLoading}
                   onChange={(event) => updateDraftFilter('country', event.target.value)}
                   value={draftFilters.country ?? ''}
@@ -867,10 +867,10 @@ export function CompanyExplorerPage() {
                 </select>
               </label>
 
-              <label className="grid gap-1.5">
+              <label className="grid min-w-0 gap-1.5">
                 <span className="text-sm font-medium text-ink-soft">List status</span>
                 <select
-                  className="h-10 rounded-control border border-line-strong bg-surface px-3 text-sm text-ink shadow-control transition-colors disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-muted focus:border-focus focus:outline-none focus:ring-2 focus:ring-focus-soft"
+                  className="h-10 w-full min-w-0 max-w-full rounded-control border border-line-strong bg-surface px-3 text-sm text-ink shadow-control transition-colors disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-muted focus:border-focus focus:outline-none focus:ring-2 focus:ring-focus-soft"
                   disabled={isLoading}
                   onChange={(event) => updateDraftFilter('entityListStatus', event.target.value)}
                   value={draftFilters.entityListStatus ?? ''}
