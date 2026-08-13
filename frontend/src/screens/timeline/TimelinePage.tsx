@@ -19,7 +19,6 @@ import type { LucideIcon } from 'lucide-react';
 
 import { Badge, Button, Panel, Spinner, type BadgeProps } from '@/components/atoms';
 import { PaginationControls, SearchBar } from '@/components/molecules';
-import { DataTable, type DataTableColumn } from '@/components/organisms';
 import { DashboardShell } from '@/components/templates';
 import { listTimeline } from '@/lib/api';
 import type { PageInfo, PolicyStatus, TimelineEventWithPolicy } from '@/lib/api';
@@ -264,31 +263,35 @@ function TimelineEventCard({ event }: { event: TimelineEventWithPolicy }) {
         <CalendarDays aria-hidden="true" className="h-4 w-4" />
       </span>
       <div className="rounded-panel border border-line bg-surface p-4 shadow-panel">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge tone={getEventTone(event.eventType)}>{formatEventType(event.eventType)}</Badge>
-              <PolicyStatusBadge status={event.policy?.status} />
-            </div>
-            <h3 className="mt-3 text-base font-semibold leading-6 text-ink">
-              {event.description || event.policy?.title || formatEventType(event.eventType)}
-            </h3>
-            {event.policy ? (
-              <Link
-                className="mt-2 inline-flex max-w-full items-center gap-1.5 truncate text-sm font-semibold text-brand hover:text-brand-hover"
-                href={policyHref ?? '#'}
-              >
-                <span className="truncate">{event.policy.title}</span>
-                <ExternalLink aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
-              </Link>
-            ) : (
-              <p className="mt-2 text-sm text-muted">General timeline event</p>
-            )}
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge tone={getEventTone(event.eventType)}>{formatEventType(event.eventType)}</Badge>
+            <PolicyStatusBadge status={event.policy?.status} />
           </div>
-          <div className="shrink-0 text-right">
-            <p className="text-sm font-semibold text-ink">{formatDate(event.eventDate)}</p>
+          <h3 className="mt-3 text-base font-semibold leading-6 text-ink">
+            {event.description || event.policy?.title || formatEventType(event.eventType)}
+          </h3>
+          {event.policy ? (
+            <Link
+              className="mt-2 inline-flex max-w-full items-start gap-1.5 text-sm font-semibold leading-5 text-brand hover:text-brand-hover"
+              href={policyHref ?? '#'}
+            >
+              <span className="min-w-0 break-words">{event.policy.title}</span>
+              <ExternalLink aria-hidden="true" className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+            </Link>
+          ) : (
+            <p className="mt-2 text-sm text-muted">General timeline event</p>
+          )}
+
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-control bg-surface-muted px-2.5 py-1 text-xs font-semibold text-muted ring-1 ring-inset ring-line">
+              <CalendarDays aria-hidden="true" size={14} strokeWidth={2} />
+              {formatDate(event.eventDate)}
+            </span>
             {event.policy?.controlNumber ? (
-              <p className="mt-1 text-xs font-semibold uppercase text-subtle">{event.policy.controlNumber}</p>
+              <span className="inline-flex max-w-full items-center rounded-control bg-surface-muted px-2.5 py-1 text-xs font-semibold uppercase text-subtle ring-1 ring-inset ring-line">
+                <span className="min-w-0 break-words">{event.policy.controlNumber}</span>
+              </span>
             ) : null}
           </div>
         </div>
@@ -298,6 +301,99 @@ function TimelineEventCard({ event }: { event: TimelineEventWithPolicy }) {
         </div>
       </div>
     </li>
+  );
+}
+
+function TimelineEventRecord({ event }: { event: TimelineEventWithPolicy }) {
+  return (
+    <article className="rounded-panel border border-line bg-surface p-4 shadow-control">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge tone={getEventTone(event.eventType)}>{formatEventType(event.eventType)}</Badge>
+            <PolicyStatusBadge status={event.policy?.status} />
+          </div>
+          <p className="mt-3 text-sm font-semibold leading-6 text-ink">
+            {event.description || event.policy?.title || formatEventType(event.eventType)}
+          </p>
+        </div>
+
+        <div className="inline-flex shrink-0 items-center gap-2 rounded-control bg-surface-muted px-3 py-2 text-sm font-medium text-muted ring-1 ring-inset ring-line">
+          <CalendarDays aria-hidden="true" size={16} strokeWidth={2} />
+          <span>{formatDate(event.eventDate)}</span>
+        </div>
+      </div>
+
+      <dl className="mt-4 grid gap-3 border-t border-line pt-4 sm:grid-cols-2">
+        <div className="min-w-0">
+          <dt className="text-xs font-semibold uppercase text-subtle">Policy</dt>
+          <dd className="mt-1 min-w-0 text-sm text-muted">
+            {event.policy ? (
+              <Link
+                className="block break-words font-semibold leading-5 text-brand hover:text-brand-hover"
+                href={`/policies/${event.policy.id}`}
+              >
+                {event.policy.title}
+              </Link>
+            ) : (
+              'General event'
+            )}
+          </dd>
+        </div>
+
+        <div className="min-w-0">
+          <dt className="text-xs font-semibold uppercase text-subtle">Source</dt>
+          <dd className="mt-1 min-w-0">
+            <EventSourceLink event={event} />
+          </dd>
+        </div>
+
+        <div className="min-w-0">
+          <dt className="text-xs font-semibold uppercase text-subtle">Control Number</dt>
+          <dd className="mt-1 text-sm font-medium text-muted">
+            {event.policy?.controlNumber ?? 'Not assigned'}
+          </dd>
+        </div>
+
+        <div className="min-w-0">
+          <dt className="text-xs font-semibold uppercase text-subtle">Event Date</dt>
+          <dd className="mt-1 text-sm font-medium text-muted">{formatDate(event.eventDate)}</dd>
+        </div>
+      </dl>
+    </article>
+  );
+}
+
+function TimelineRecordList({
+  events,
+  isLoading,
+}: {
+  events: TimelineEventWithPolicy[];
+  isLoading: boolean;
+}) {
+  if (isLoading) {
+    return (
+      <div className="flex min-h-40 items-center justify-center">
+        <Spinner label="Loading event records" />
+      </div>
+    );
+  }
+
+  if (!events.length) {
+    return (
+      <div className="rounded-panel border border-dashed border-line bg-surface-muted px-4 py-10 text-center">
+        <p className="font-semibold text-ink">No event records found</p>
+        <p className="mt-1 text-sm text-muted">Adjust the current-page filters or load another page.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      {events.map((event) => (
+        <TimelineEventRecord event={event} key={event.id} />
+      ))}
+    </div>
   );
 }
 
@@ -487,60 +583,6 @@ export function TimelinePage() {
       .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
   }, [filteredTimeline]);
 
-  const eventColumns = useMemo<DataTableColumn<TimelineEventWithPolicy>[]>(
-    () => [
-      {
-        cell: (event) => (
-          <div className="max-w-md">
-            <Badge tone={getEventTone(event.eventType)}>{formatEventType(event.eventType)}</Badge>
-            <p className="mt-2 font-semibold leading-6 text-ink">
-              {event.description || formatEventType(event.eventType)}
-            </p>
-          </div>
-        ),
-        header: 'Event',
-        id: 'event',
-        isRowHeader: true,
-        width: '32%',
-      },
-      {
-        cell: (event) =>
-          event.policy ? (
-            <Link
-              className="block max-w-xs truncate font-semibold text-brand hover:text-brand-hover"
-              href={`/policies/${event.policy.id}`}
-            >
-              {event.policy.title}
-            </Link>
-          ) : (
-            <span className="text-muted">General event</span>
-          ),
-        header: 'Policy',
-        id: 'policy',
-        width: '30%',
-      },
-      {
-        cell: (event) => <PolicyStatusBadge status={event.policy?.status} />,
-        header: 'Status',
-        id: 'status',
-        width: '12%',
-      },
-      {
-        cell: (event) => <EventSourceLink event={event} />,
-        header: 'Source',
-        id: 'source',
-        width: '16%',
-      },
-      {
-        cell: (event) => <span className="font-semibold text-ink">{formatDate(event.eventDate)}</span>,
-        header: 'Event Date',
-        id: 'eventDate',
-        width: '10%',
-      },
-    ],
-    [],
-  );
-
   const handleNextPage = () => {
     if (!pageInfo.hasNextPage || !pageInfo.nextCursor) {
       return;
@@ -609,7 +651,7 @@ export function TimelinePage() {
         </Panel>
       ) : null}
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <section className="mb-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {metrics.map((metric) => (
           <MetricCard key={metric.label} {...metric} />
         ))}
@@ -676,16 +718,13 @@ export function TimelinePage() {
             )}
           </Panel>
 
-          <DataTable
+          <Panel
             actions={<Badge tone="slate">{formatCount(filteredTimeline.length)} shown</Badge>}
-            columns={eventColumns}
-            description="Structured event records from the loaded timeline page."
-            emptyState="No event records match the current view."
-            isLoading={isLoading}
-            rowKey={(event) => event.id}
-            rows={filteredTimeline}
+            description="Readable event records for the current timeline page."
             title="Event Records"
-          />
+          >
+            <TimelineRecordList events={filteredTimeline} isLoading={isLoading} />
+          </Panel>
         </div>
 
         <aside className="space-y-6">
