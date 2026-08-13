@@ -105,6 +105,10 @@ const emptyOptions: ExplorerOptions = {
   years: [],
 };
 
+export type PolicyExplorerPageProps = {
+  initialSearch?: string;
+};
+
 const formatDate = (value?: string | null): string => {
   if (!value) {
     return 'Not set';
@@ -310,7 +314,7 @@ const policyColumns: DataTableColumn<Policy>[] = [
   },
 ];
 
-export function PolicyExplorerPage() {
+export function PolicyExplorerPage({ initialSearch }: PolicyExplorerPageProps) {
   const router = useRouter();
   const accessToken = useAuthStore((state) => state.accessToken);
   const loadProfile = useAuthStore((state) => state.loadProfile);
@@ -330,7 +334,9 @@ export function PolicyExplorerPage() {
   const [options, setOptions] = useState<ExplorerOptions>(emptyOptions);
   const [pageInfo, setPageInfo] = useState<PageInfo>(emptyPageInfo);
   const [policies, setPolicies] = useState<Policy[]>([]);
-  const [searchValue, setSearchValue] = useState(() => useUiStore.getState().policyFilters.q ?? '');
+  const [searchValue, setSearchValue] = useState(
+    () => initialSearch?.trim() || useUiStore.getState().policyFilters.q || '',
+  );
 
   const resetPagination = useCallback(() => {
     setCursor(undefined);
@@ -445,6 +451,22 @@ export function PolicyExplorerPage() {
 
     return () => window.clearTimeout(syncTimer);
   }, [policyFilters]);
+
+  useEffect(() => {
+    const query = initialSearch?.trim();
+
+    if (!query || query === useUiStore.getState().policyFilters.q) {
+      return undefined;
+    }
+
+    const searchTimer = window.setTimeout(() => {
+      resetPagination();
+      setSearchValue(query);
+      setPolicyFilter('q', query);
+    }, 0);
+
+    return () => window.clearTimeout(searchTimer);
+  }, [initialSearch, resetPagination, setPolicyFilter]);
 
   const activeFilters = useMemo(() => getActiveFilterEntries(policyFilters), [policyFilters]);
 

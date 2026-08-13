@@ -4,7 +4,7 @@ import { AlertCircle, Eye, EyeOff, LogIn, UserPlus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import type { ChangeEvent, FormEvent } from 'react';
 import { useEffect, useId, useState } from 'react';
-import { Badge, Button, IconButton, Input } from '@/components/atoms';
+import { AppLogo, Badge, Button, IconButton, Input } from '@/components/atoms';
 import { useAuthStore } from '@/store';
 import { cn } from '@/lib/cn';
 
@@ -98,11 +98,14 @@ export function AuthForm({ className, defaultMode = 'login' }: AuthFormProps) {
     >
       <header className="border-b border-line px-5 py-4">
         <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-sm font-semibold uppercase text-brand">Diffusion Node</p>
-            <h1 className="mt-1 text-xl font-semibold text-ink" id="auth-heading">
-              Access policy intelligence
-            </h1>
+          <div className="flex min-w-0 items-start gap-3">
+            <AppLogo aria-label="Diffusion Node" size="sm" />
+            <div className="min-w-0">
+              <p className="text-sm font-semibold uppercase text-brand">Diffusion Node</p>
+              <h1 className="mt-1 text-xl font-semibold text-ink" id="auth-heading">
+                Access policy intelligence
+              </h1>
+            </div>
           </div>
           <Badge tone="slate">v1</Badge>
         </div>
