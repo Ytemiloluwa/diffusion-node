@@ -9,4 +9,5 @@ module.exports = {
   transform: {
     '^.+\\.ts$': '<rootDir>/jest.esbuild-transformer.cjs',
   },
+  watchman: false,
 };
