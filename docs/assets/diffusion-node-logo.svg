@@ -1,0 +1,39 @@
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Diffusion Node logo</title>
+  <desc id="desc">A dark rounded square with connected policy nodes and a teal diffusion line.</desc>
+  <defs>
+    <linearGradient id="panel" x1="48" y1="31" x2="221" y2="226" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#031826"/>
+      <stop offset="0.55" stop-color="#07111F"/>
+      <stop offset="1" stop-color="#020617"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="35" y1="201" x2="221" y2="201" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#06B6D4"/>
+      <stop offset="0.5" stop-color="#14B8A6"/>
+      <stop offset="1" stop-color="#22C55E"/>
+    </linearGradient>
+    <filter id="shadow" x="0" y="0" width="256" height="256" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#020617" flood-opacity="0.32"/>
+    </filter>
+    <filter id="glow" x="24" y="36" width="208" height="178" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect x="24" y="24" width="208" height="208" rx="48" fill="url(#panel)" filter="url(#shadow)"/>
+  <path d="M24 180H232V190C232 213.196 213.196 232 190 232H66C42.804 232 24 213.196 24 190V180Z" fill="url(#accent)"/>
+  <path d="M56 180H200" stroke="#67E8F9" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+  <g filter="url(#glow)">
+    <path d="M128 72V122" stroke="#D1FAE5" stroke-width="10" stroke-linecap="round"/>
+    <path d="M82 144L128 122L174 144" stroke="#E2E8F0" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M89 98L128 72L167 98" stroke="#F8FAFC" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="128" cy="72" r="12" fill="#F8FAFC"/>
+    <circle cx="82" cy="144" r="12" fill="#14B8A6"/>
+    <circle cx="174" cy="144" r="12" fill="#22C55E"/>
+    <circle cx="128" cy="122" r="10" fill="#06B6D4"/>
+  </g>
+  <path d="M72 168C92 188 164 188 184 168" stroke="#94A3B8" stroke-width="6" stroke-linecap="round" opacity="0.7"/>
+</svg>
