@@ -6,6 +6,7 @@ module.exports = {
   roots: ['<rootDir>/tests'],
   setupFiles: ['<rootDir>/tests/setup.ts'],
   testEnvironment: 'node',
+  testPathIgnorePatterns: ['<rootDir>/tests/e2e/'],
   transform: {
     '^.+\\.ts$': '<rootDir>/jest.esbuild-transformer.cjs',
   },

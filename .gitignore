@@ -22,6 +22,8 @@ skills-lock.json
 dist/
 build/
 coverage/
+playwright-report/
+test-results/
 .nyc_output/
 frontend/.next/
 frontend/out/
