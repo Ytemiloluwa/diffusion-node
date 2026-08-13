@@ -7,9 +7,9 @@ import {
   FileText,
   Gauge,
   Globe2,
-  ShieldCheck,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { AppLogo } from '@/components/atoms';
 import { cn } from '@/lib/cn';
 
 export type NavigationItemId =
@@ -57,9 +57,7 @@ export function NavigationSidebar({ activeItem, className }: NavigationSidebarPr
       )}
     >
       <div className="flex h-20 items-center gap-3 border-b border-line px-6">
-        <span className="flex size-10 items-center justify-center rounded-panel bg-brand text-brand-contrast shadow-control">
-          <ShieldCheck aria-hidden="true" size={21} strokeWidth={2} />
-        </span>
+        <AppLogo aria-label="Diffusion Node" size="md" />
         <span className="text-lg font-semibold text-ink">Diffusion Node</span>
       </div>
 

@@ -1,3 +1,4 @@
+export { AppLogo, type AppLogoProps } from './AppLogo';
 export { Badge, type BadgeProps } from './Badge';
 export { Button, type ButtonProps } from './Button';
 export { CountryFlag, type CountryFlagProps } from './CountryFlag';

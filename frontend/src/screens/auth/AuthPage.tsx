@@ -1,4 +1,4 @@
-import { ShieldCheck } from 'lucide-react';
+import { AppLogo } from '@/components/atoms';
 import { AuthForm } from '@/components/organisms';
 
 export function AuthPage() {
@@ -7,9 +7,7 @@ export function AuthPage() {
       <div className="mx-auto grid min-h-[calc(100vh-3rem)] w-full max-w-6xl items-center gap-8 lg:grid-cols-[minmax(0,1fr)_26rem]">
         <section aria-labelledby="auth-product-heading" className="max-w-2xl">
           <div className="flex items-center gap-3">
-            <span className="flex size-11 items-center justify-center rounded-panel bg-brand text-brand-contrast shadow-control">
-              <ShieldCheck aria-hidden="true" size={22} strokeWidth={2} />
-            </span>
+            <AppLogo aria-label="Diffusion Node" size="lg" />
             <span className="text-lg font-semibold text-ink">Diffusion Node</span>
           </div>
           <h1
