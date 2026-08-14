@@ -18,6 +18,10 @@ export const tokenBodySchema = z.object({
   password: z.string().min(1),
 });
 
+export const apiKeyBodySchema = z.object({
+  label: z.string().trim().min(1).max(80),
+});
+
 export const refreshBodySchema = z.object({
   refreshToken: z.string().min(1),
 });
@@ -25,6 +29,8 @@ export const refreshBodySchema = z.object({
 export const idParamsSchema = z.object({
   id: z.string().uuid(),
 });
+
+export const apiKeyParamsSchema = idParamsSchema;
 
 export const policiesQuerySchema = z.object({
   ...cursorPaginationQuery,

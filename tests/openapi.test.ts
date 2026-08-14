@@ -27,6 +27,8 @@ describe('OpenAPI spec', () => {
         '/auth/refresh',
         '/auth/register',
         '/auth/token',
+        '/api-keys',
+        '/api-keys/{id}/revoke',
         '/categories',
         '/companies',
         '/countries',
@@ -72,9 +74,14 @@ describe('OpenAPI spec', () => {
 
   it('documents authentication requirements and shared schemas', () => {
     expect(spec.paths['/me'].get.security).toEqual([{ bearerAuth: [] }]);
+    expect(spec.paths['/api-keys'].post.security).toEqual([{ bearerAuth: [] }]);
+    expect(spec.paths['/api-keys/{id}/revoke'].post.security).toEqual([{ bearerAuth: [] }]);
     expect(spec.paths['/auth/token'].post.security).toEqual([]);
     expect(spec.components.securitySchemes).toHaveProperty('bearerAuth');
     expect(spec.components.securitySchemes).toHaveProperty('apiKeyAuth');
+    expect(spec.components.schemas).toHaveProperty('ApiKeyCreateRequest');
+    expect(spec.components.schemas).toHaveProperty('ApiKeyCredential');
+    expect(spec.components.schemas).toHaveProperty('ApiKeySummary');
     expect(spec.components.schemas).toHaveProperty('Policy');
     expect(spec.components.schemas).toHaveProperty('PolicyStatus');
     expect(spec.components.schemas).toHaveProperty('ValidationErrorResponse');
