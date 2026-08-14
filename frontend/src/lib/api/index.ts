@@ -9,6 +9,8 @@ export {
 } from './http';
 export { issueToken, refreshAccessToken, registerUser } from './auth';
 export type { IssueTokenPayload, RefreshAccessTokenPayload, RegisterUserPayload } from './auth';
+export { createApiKey, revokeApiKey } from './apiKeys';
+export type { CreateApiKeyPayload } from './apiKeys';
 export { getPolicy, getPolicyTimeline, listPolicies } from './policies';
 export {
   listCategories,

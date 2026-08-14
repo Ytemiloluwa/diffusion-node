@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { ReactNode } from 'react';
+import type { FormEvent, ReactNode } from 'react';
 import {
   CheckCircle2,
   Clipboard,
@@ -15,7 +15,7 @@ import {
   UserRound,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { Badge, Button, IconButton, Panel, Spinner } from '@/components/atoms';
+import { Badge, Button, IconButton, Input, Panel, Spinner } from '@/components/atoms';
 import { ApiKeyRow } from '@/components/molecules';
 import { DashboardShell } from '@/components/templates';
 import { API_BASE_URL_ENV_VAR, getApiBaseUrl, type ApiKeySummary, type UserProfile } from '@/lib/api';
@@ -145,15 +145,20 @@ function SettingRow({
 export function DeveloperSettingsPage() {
   const router = useRouter();
   const accessToken = useAuthStore((state) => state.accessToken);
+  const createApiKey = useAuthStore((state) => state.createApiKey);
   const lastIssuedApiKey = useAuthStore((state) => state.lastIssuedApiKey);
   const loadProfile = useAuthStore((state) => state.loadProfile);
   const logout = useAuthStore((state) => state.logout);
+  const revokeApiKey = useAuthStore((state) => state.revokeApiKey);
   const user = useAuthStore((state) => state.user);
   const [copiedValue, setCopiedValue] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [hasHydrated, setHasHydrated] = useState(false);
+  const [isCreatingApiKey, setIsCreatingApiKey] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [newApiKeyLabel, setNewApiKeyLabel] = useState('Dashboard session');
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [revokingApiKeyId, setRevokingApiKeyId] = useState<string | null>(null);
 
   const apiBaseUrl = useMemo(() => {
     try {
@@ -236,6 +241,76 @@ export function DeveloperSettingsPage() {
     logout();
     router.replace('/auth');
   }, [logout, router]);
+
+  const handleCreateApiKey = useCallback(
+    async (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+
+      const label = newApiKeyLabel.trim();
+
+      if (!label) {
+        setError('API key label is required.');
+        return;
+      }
+
+      setError(null);
+      setIsCreatingApiKey(true);
+
+      try {
+        const apiKey = await createApiKey({ label });
+        setProfile((currentProfile) =>
+          currentProfile
+            ? {
+                ...currentProfile,
+                apiKeys: [
+                  {
+                    createdAt: apiKey.createdAt,
+                    id: apiKey.id,
+                    label: apiKey.label,
+                    lastUsedAt: null,
+                    revokedAt: null,
+                  },
+                  ...currentProfile.apiKeys.filter((existingKey) => existingKey.id !== apiKey.id),
+                ],
+              }
+            : currentProfile,
+        );
+        setNewApiKeyLabel('Dashboard session');
+        window.setTimeout(() => {
+          void refreshProfile();
+        }, 0);
+      } catch (createError) {
+        setError(toErrorMessage(createError));
+      } finally {
+        setIsCreatingApiKey(false);
+      }
+    },
+    [createApiKey, newApiKeyLabel, refreshProfile],
+  );
+
+  const handleRevokeApiKey = useCallback(
+    async (apiKeyId: string) => {
+      setError(null);
+      setRevokingApiKeyId(apiKeyId);
+
+      try {
+        await revokeApiKey(apiKeyId);
+        setProfile((currentProfile) =>
+          currentProfile
+            ? {
+                ...currentProfile,
+                apiKeys: currentProfile.apiKeys.filter((apiKey) => apiKey.id !== apiKeyId),
+              }
+            : currentProfile,
+        );
+      } catch (revokeError) {
+        setError(toErrorMessage(revokeError));
+      } finally {
+        setRevokingApiKeyId(null);
+      }
+    },
+    [revokeApiKey],
+  );
 
   const activeApiKeys = profile?.apiKeys ?? [];
   const displayUser = profile ?? user;
@@ -405,6 +480,27 @@ export function DeveloperSettingsPage() {
             description="Active key summaries returned by the authenticated profile endpoint."
             title="API Keys"
           >
+            <form
+              className="mb-4 grid gap-3 rounded-panel border border-line bg-surface-muted p-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end"
+              onSubmit={(event) => void handleCreateApiKey(event)}
+            >
+              <Input
+                id="new-api-key-label"
+                label="New API key label"
+                maxLength={80}
+                onChange={(event) => setNewApiKeyLabel(event.target.value)}
+                placeholder="Dashboard session"
+                value={newApiKeyLabel}
+              />
+              <Button
+                isLoading={isCreatingApiKey}
+                leadingIcon={<KeyRound aria-hidden="true" size={16} strokeWidth={2} />}
+                type="submit"
+              >
+                Generate key
+              </Button>
+            </form>
+
             {isLoading ? (
               <div className="flex items-center gap-3 text-sm text-muted">
                 <Spinner label="Loading API keys" />
@@ -419,7 +515,9 @@ export function DeveloperSettingsPage() {
                     label={apiKey.label}
                     lastUsedAt={apiKey.lastUsedAt ? formatDate(apiKey.lastUsedAt) : null}
                     maskedKey={maskApiKeySummary(apiKey)}
+                    onRevoke={() => void handleRevokeApiKey(apiKey.id)}
                     revokedAt={apiKey.revokedAt}
+                    isRevoking={revokingApiKeyId === apiKey.id}
                   />
                 ))}
               </div>
