@@ -47,7 +47,7 @@ Diffusion Node is in active v1 development. The current application includes the
 - Technology explorer for semiconductor and AI technology categories affected by policy controls.
 - Company explorer for entity-list status, headquarters country, aliases, and policy exposure context.
 - Global timeline view for sourced regulatory events and linked policy records.
-- Developer settings screen for authenticated profile/session details.
+- Developer settings screen for authenticated profile/session details and API key management.
 - Swagger UI and OpenAPI documentation for the backend API.
 - CI coverage for lint/typecheck, API/unit tests, frontend route smoke tests, and browser E2E auth flow.
 
@@ -187,6 +187,8 @@ Core API routes:
 | `POST` | `/api/v1/auth/token` | Issue access and refresh credentials |
 | `POST` | `/api/v1/auth/refresh` | Refresh access credentials |
 | `GET` | `/api/v1/me` | Fetch the authenticated user profile |
+| `POST` | `/api/v1/api-keys` | Generate a new API key for the authenticated user |
+| `POST` | `/api/v1/api-keys/:id/revoke` | Revoke an authenticated user's API key |
 | `GET` | `/api/v1/policies` | Search and paginate policy records |
 | `GET` | `/api/v1/policies/:id` | Fetch one policy with relations |
 | `GET` | `/api/v1/policies/:id/timeline` | Fetch a policy-specific timeline |

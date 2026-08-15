@@ -4,13 +4,17 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import {
   ApiClientError,
+  createApiKey,
+  type CreateApiKeyPayload,
   getCurrentUser,
   issueToken,
   refreshAccessToken,
   registerUser,
+  revokeApiKey,
   setApiAccessToken,
   setApiUnauthorizedHandler,
   type ApiKeyCredential,
+  type ApiKeySummary,
   type AuthTokenResponse,
   type IssueTokenPayload,
   type RefreshTokenResponse,
@@ -35,6 +39,7 @@ type PersistedAuthState = {
 
 export type AuthStore = PersistedAuthState & {
   clearError: () => void;
+  createApiKey: (payload: CreateApiKeyPayload) => Promise<ApiKeyCredential>;
   error: StoreError | null;
   isAuthenticated: boolean;
   lastIssuedApiKey: ApiKeyCredential | null;
@@ -43,6 +48,7 @@ export type AuthStore = PersistedAuthState & {
   logout: () => void;
   refreshSession: () => Promise<RefreshTokenResponse | null>;
   register: (payload: RegisterUserPayload) => Promise<User>;
+  revokeApiKey: (apiKeyId: string) => Promise<ApiKeySummary>;
   status: AuthStatus;
 };
 
@@ -77,6 +83,29 @@ export const useAuthStore = create<AuthStore>()(
     (set, get) => ({
       ...emptyAuthState,
       clearError: () => set({ error: null }),
+      createApiKey: async (payload) => {
+        const { accessToken } = get();
+
+        if (!accessToken) {
+          get().logout();
+          throw new ApiClientError('Authentication is required.', {
+            code: 'UNAUTHENTICATED',
+            status: 401,
+          });
+        }
+
+        syncAccessToken(accessToken);
+        set({ error: null });
+
+        try {
+          const apiKey = await createApiKey(payload);
+          set({ error: null, lastIssuedApiKey: apiKey });
+          return apiKey;
+        } catch (error) {
+          set({ error: toStoreError(error) });
+          throw error;
+        }
+      },
       error: null,
       isAuthenticated: false,
       lastIssuedApiKey: null,
@@ -195,6 +224,33 @@ export const useAuthStore = create<AuthStore>()(
             error: toStoreError(error),
             status: get().isAuthenticated ? 'authenticated' : 'unauthenticated',
           });
+          throw error;
+        }
+      },
+      revokeApiKey: async (apiKeyId) => {
+        const { accessToken } = get();
+
+        if (!accessToken) {
+          get().logout();
+          throw new ApiClientError('Authentication is required.', {
+            code: 'UNAUTHENTICATED',
+            status: 401,
+          });
+        }
+
+        syncAccessToken(accessToken);
+        set({ error: null });
+
+        try {
+          const apiKey = await revokeApiKey(apiKeyId);
+          set((state) => ({
+            error: null,
+            lastIssuedApiKey:
+              state.lastIssuedApiKey?.id === apiKeyId ? null : state.lastIssuedApiKey,
+          }));
+          return apiKey;
+        } catch (error) {
+          set({ error: toStoreError(error) });
           throw error;
         }
       },

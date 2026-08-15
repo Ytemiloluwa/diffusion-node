@@ -5,6 +5,11 @@ import request from 'supertest';
 type AsyncMock<TResult> = (args?: unknown) => Promise<TResult>;
 
 const mockPrisma = {
+  apiKey: {
+    create: jest.fn<AsyncMock<unknown>>(),
+    findFirst: jest.fn<AsyncMock<unknown | null>>(),
+    update: jest.fn<AsyncMock<unknown>>(),
+  },
   company: {
     findMany: jest.fn<AsyncMock<unknown[]>>(),
   },
@@ -379,5 +384,154 @@ describe('API app', () => {
       .get('/api/v1/me')
       .set('authorization', `Bearer ${accessToken}`)
       .expect(404);
+  });
+
+  it('creates a new API key for the authenticated user and returns the raw key once', async () => {
+    const userId = '00000000-0000-4000-8000-000000000005';
+    const apiKeyId = '00000000-0000-4000-8000-000000000006';
+    const accessToken = signAccessToken({
+      email: 'developer@example.com',
+      id: userId,
+      role: Role.DEVELOPER,
+    });
+    mockPrisma.apiKey.create.mockImplementation(async (args?: unknown) => {
+      const { data } = args as {
+        data: {
+          key: string;
+          label: string;
+          userId: string;
+        };
+      };
+
+      return {
+        createdAt: new Date('2026-08-14T00:00:00.000Z'),
+        id: apiKeyId,
+        key: data.key,
+        label: data.label,
+        lastUsedAt: null,
+        revokedAt: null,
+        userId: data.userId,
+      };
+    });
+
+    const response = await request(createApp())
+      .post('/api/v1/api-keys')
+      .set('authorization', `Bearer ${accessToken}`)
+      .send({ label: 'Reviewer demo key' })
+      .expect(201);
+    const createCall = mockPrisma.apiKey.create.mock.calls[0][0] as {
+      data: {
+        key: string;
+        label: string;
+        userId: string;
+      };
+    };
+
+    expect(response.body.data).toMatchObject({
+      createdAt: '2026-08-14T00:00:00.000Z',
+      id: apiKeyId,
+      key: expect.stringMatching(/^dn_/),
+      label: 'Reviewer demo key',
+    });
+    expect(createCall.data).toMatchObject({
+      label: 'Reviewer demo key',
+      userId,
+    });
+    expect(createCall.data.key).not.toBe(response.body.data.key);
+  });
+
+  it('validates API key labels before creation', async () => {
+    const accessToken = signAccessToken({
+      email: 'developer@example.com',
+      id: '00000000-0000-4000-8000-000000000007',
+      role: Role.DEVELOPER,
+    });
+
+    await request(createApp())
+      .post('/api/v1/api-keys')
+      .set('authorization', `Bearer ${accessToken}`)
+      .send({ label: '   ' })
+      .expect(400);
+
+    expect(mockPrisma.apiKey.create).not.toHaveBeenCalled();
+  });
+
+  it('revokes an authenticated user API key without exposing other users keys', async () => {
+    const userId = '00000000-0000-4000-8000-000000000008';
+    const apiKeyId = '00000000-0000-4000-8000-000000000009';
+    const accessToken = signAccessToken({
+      email: 'developer@example.com',
+      id: userId,
+      role: Role.DEVELOPER,
+    });
+    mockPrisma.apiKey.findFirst.mockResolvedValue({
+      createdAt: new Date('2026-08-01T00:00:00.000Z'),
+      id: apiKeyId,
+      key: 'stored-hash',
+      label: 'Reviewer demo key',
+      lastUsedAt: null,
+      revokedAt: null,
+      userId,
+    });
+    mockPrisma.apiKey.update.mockImplementation(async (args?: unknown) => {
+      const { data } = args as { data: { revokedAt: Date } };
+
+      return {
+        createdAt: new Date('2026-08-01T00:00:00.000Z'),
+        id: apiKeyId,
+        key: 'stored-hash',
+        label: 'Reviewer demo key',
+        lastUsedAt: null,
+        revokedAt: data.revokedAt,
+        userId,
+      };
+    });
+
+    const response = await request(createApp())
+      .post(`/api/v1/api-keys/${apiKeyId}/revoke`)
+      .set('authorization', `Bearer ${accessToken}`)
+      .expect(200);
+
+    expect(mockPrisma.apiKey.findFirst).toHaveBeenCalledWith({
+      where: {
+        id: apiKeyId,
+        revokedAt: null,
+        userId,
+      },
+    });
+    expect(mockPrisma.apiKey.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: {
+          revokedAt: expect.any(Date),
+        },
+        where: { id: apiKeyId },
+      }),
+    );
+    expect(response.body.data).toMatchObject({
+      id: apiKeyId,
+      label: 'Reviewer demo key',
+      lastUsedAt: null,
+      revokedAt: expect.any(String),
+    });
+    expect(response.body.data).not.toHaveProperty('key');
+  });
+
+  it('returns 404 when revoking a missing or already revoked API key', async () => {
+    const accessToken = signAccessToken({
+      email: 'developer@example.com',
+      id: '00000000-0000-4000-8000-000000000010',
+      role: Role.DEVELOPER,
+    });
+    mockPrisma.apiKey.findFirst.mockResolvedValue(null);
+
+    await request(createApp())
+      .post('/api/v1/api-keys/00000000-0000-4000-8000-000000000011/revoke')
+      .set('authorization', `Bearer ${accessToken}`)
+      .expect(404)
+      .expect(({ body }) => {
+        expect(body.error.code).toBe('API_KEY_NOT_FOUND');
+      });
+
+    expect(mockPrisma.apiKey.update).not.toHaveBeenCalled();
   });
 });

@@ -72,6 +72,17 @@ const idPathParameter = {
   },
 };
 
+const apiKeyIdPathParameter = {
+  description: 'API key UUID.',
+  in: 'path',
+  name: 'id',
+  required: true,
+  schema: {
+    format: 'uuid',
+    type: 'string',
+  },
+};
+
 const paginatedResponses = {
   400: validationErrorResponse,
   429: rateLimitResponse,
@@ -83,11 +94,24 @@ export const openApiSpec = swaggerJsdoc({
   definition: {
     components: {
       parameters: {
+        ApiKeyId: apiKeyIdPathParameter,
         Cursor: cursorParameter,
         Limit: limitParameter,
         PolicyId: idPathParameter,
       },
       schemas: {
+        ApiKeyCreateRequest: {
+          additionalProperties: false,
+          properties: {
+            label: {
+              maxLength: 80,
+              minLength: 1,
+              type: 'string',
+            },
+          },
+          required: ['label'],
+          type: 'object',
+        },
         ApiKeyCredential: {
           additionalProperties: false,
           properties: {
@@ -682,6 +706,62 @@ export const openApiSpec = swaggerJsdoc({
           tags: ['Auth'],
         },
       },
+      '/api-keys': {
+        post: {
+          description:
+            'Creates a new API key for the authenticated user. The raw key is returned only once and is stored server-side as a hash.',
+          requestBody: {
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/ApiKeyCreateRequest' },
+              },
+            },
+            required: true,
+          },
+          responses: {
+            201: okJson('API key created.', {
+              additionalProperties: false,
+              properties: {
+                data: { $ref: '#/components/schemas/ApiKeyCredential' },
+              },
+              required: ['data'],
+              type: 'object',
+            }),
+            400: validationErrorResponse,
+            401: unauthorizedResponse,
+            429: rateLimitResponse,
+            500: internalErrorResponse,
+          },
+          security: [{ bearerAuth: [] }],
+          summary: 'Create an API key',
+          tags: ['API Keys'],
+        },
+      },
+      '/api-keys/{id}/revoke': {
+        post: {
+          description:
+            'Revokes one active API key owned by the authenticated user. Revoked keys can no longer be used for API-key authentication.',
+          parameters: [{ $ref: '#/components/parameters/ApiKeyId' }],
+          responses: {
+            200: okJson('API key revoked.', {
+              additionalProperties: false,
+              properties: {
+                data: { $ref: '#/components/schemas/ApiKeySummary' },
+              },
+              required: ['data'],
+              type: 'object',
+            }),
+            400: validationErrorResponse,
+            401: unauthorizedResponse,
+            404: notFoundResponse,
+            429: rateLimitResponse,
+            500: internalErrorResponse,
+          },
+          security: [{ bearerAuth: [] }],
+          summary: 'Revoke an API key',
+          tags: ['API Keys'],
+        },
+      },
       '/categories': {
         get: {
           description:
@@ -1107,6 +1187,7 @@ export const openApiSpec = swaggerJsdoc({
     tags: [
       { name: 'System' },
       { name: 'Auth' },
+      { name: 'API Keys' },
       { name: 'Policies' },
       { name: 'Timeline' },
       { name: 'Reference Data' },
