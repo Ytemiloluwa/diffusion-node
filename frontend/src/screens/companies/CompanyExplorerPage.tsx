@@ -515,12 +515,14 @@ export function CompanyExplorerPage() {
         header: 'Company',
         id: 'company',
         isRowHeader: true,
+        sortValue: (company) => company.name,
         width: '28%',
       },
       {
         cell: (company) => <CountryLabel country={company.hqCountry} />,
         header: 'HQ Country',
         id: 'country',
+        sortValue: (company) => company.hqCountry.name,
         width: '16%',
       },
       {
@@ -531,6 +533,7 @@ export function CompanyExplorerPage() {
         ),
         header: 'List Status',
         id: 'status',
+        sortValue: (company) => company.entityListStatus,
         width: '16%',
       },
       {
@@ -538,6 +541,7 @@ export function CompanyExplorerPage() {
         cell: (company) => formatCount(policyStats.get(company.id)?.policyCount ?? 0),
         header: 'Policies',
         id: 'policies',
+        sortValue: (company) => policyStats.get(company.id)?.policyCount ?? 0,
         width: '10%',
       },
       {
@@ -545,12 +549,14 @@ export function CompanyExplorerPage() {
         cell: (company) => formatCount(policyStats.get(company.id)?.technologies.size ?? 0),
         header: 'Technologies',
         id: 'technologies',
+        sortValue: (company) => policyStats.get(company.id)?.technologies.size ?? 0,
         width: '12%',
       },
       {
         cell: (company) => formatDate(policyStats.get(company.id)?.latestPolicyDate),
         header: 'Latest Policy',
         id: 'latestPolicy',
+        sortValue: (company) => policyStats.get(company.id)?.latestPolicyDate,
         width: '14%',
       },
       {

@@ -234,6 +234,7 @@ const policyColumns: DataTableColumn<Policy>[] = [
     header: 'Policy',
     id: 'policy',
     isRowHeader: true,
+    sortValue: (policy) => policy.title,
     width: '30%',
   },
   {
@@ -243,6 +244,7 @@ const policyColumns: DataTableColumn<Policy>[] = [
     },
     header: 'Technologies',
     id: 'technologies',
+    sortValue: (policy) => getPolicyTechnologyNames(policy).join(', '),
     width: '22%',
   },
   {
@@ -250,6 +252,7 @@ const policyColumns: DataTableColumn<Policy>[] = [
     cell: (policy) => formatCount(policy.companies.length),
     header: 'Companies',
     id: 'companies',
+    sortValue: (policy) => policy.companies.length,
     width: '10%',
   },
   {
@@ -276,18 +279,21 @@ const policyColumns: DataTableColumn<Policy>[] = [
     },
     header: 'Countries',
     id: 'countries',
+    sortValue: (policy) => getPolicyCountries(policy).length,
     width: '14%',
   },
   {
     cell: (policy) => <Badge tone={statusTones[policy.status]}>{statusLabels[policy.status]}</Badge>,
     header: 'Status',
     id: 'status',
+    sortValue: (policy) => statusLabels[policy.status],
     width: '10%',
   },
   {
     cell: (policy) => formatDate(policy.effectiveDate),
     header: 'Effective',
     id: 'effectiveDate',
+    sortValue: (policy) => policy.effectiveDate,
     width: '10%',
   },
   {

@@ -576,6 +576,7 @@ export function CountryExplorerPage() {
         header: 'Country',
         id: 'country',
         isRowHeader: true,
+        sortValue: (country) => country.name,
         width: '24%',
       },
       {
@@ -586,6 +587,7 @@ export function CountryExplorerPage() {
         ),
         header: 'Tier',
         id: 'tier',
+        sortValue: (country) => country.tierClassification,
         width: '14%',
       },
       {
@@ -593,6 +595,7 @@ export function CountryExplorerPage() {
         cell: (country) => formatCount(country.restrictionCount),
         header: 'Restrictions',
         id: 'restrictions',
+        sortValue: (country) => country.restrictionCount,
         width: '12%',
       },
       {
@@ -600,6 +603,7 @@ export function CountryExplorerPage() {
         cell: (country) => formatCount(country.activePolicyCount),
         header: 'Active Policies',
         id: 'activePolicies',
+        sortValue: (country) => country.activePolicyCount,
         width: '14%',
       },
       {
@@ -607,6 +611,7 @@ export function CountryExplorerPage() {
         cell: (country) => formatCount(country.companyCount),
         header: 'Companies',
         id: 'companies',
+        sortValue: (country) => country.companyCount,
         width: '12%',
       },
       {
@@ -614,12 +619,14 @@ export function CountryExplorerPage() {
         cell: (country) => formatCount(country.technologyCount),
         header: 'Technologies',
         id: 'technologies',
+        sortValue: (country) => country.technologyCount,
         width: '12%',
       },
       {
         cell: (country) => formatDate(country.latestPolicyDate),
         header: 'Latest Policy',
         id: 'latestPolicy',
+        sortValue: (country) => country.latestPolicyDate,
         width: '12%',
       },
     ],
