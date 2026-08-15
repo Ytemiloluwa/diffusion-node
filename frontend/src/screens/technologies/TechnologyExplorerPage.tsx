@@ -542,6 +542,7 @@ export function TechnologyExplorerPage() {
         header: 'Technology',
         id: 'technology',
         isRowHeader: true,
+        sortValue: (technology) => technology.name,
         width: '30%',
       },
       {
@@ -550,6 +551,7 @@ export function TechnologyExplorerPage() {
         ),
         header: 'Category',
         id: 'category',
+        sortValue: (technology) => technology.category.name,
         width: '16%',
       },
       {
@@ -557,6 +559,7 @@ export function TechnologyExplorerPage() {
         cell: (technology) => formatCount(policyStats.get(technology.id)?.policyCount ?? 0),
         header: 'Policies',
         id: 'policies',
+        sortValue: (technology) => policyStats.get(technology.id)?.policyCount ?? 0,
         width: '10%',
       },
       {
@@ -564,6 +567,7 @@ export function TechnologyExplorerPage() {
         cell: (technology) => formatCount(policyStats.get(technology.id)?.activePolicyCount ?? 0),
         header: 'Active',
         id: 'activePolicies',
+        sortValue: (technology) => policyStats.get(technology.id)?.activePolicyCount ?? 0,
         width: '10%',
       },
       {
@@ -571,6 +575,7 @@ export function TechnologyExplorerPage() {
         cell: (technology) => formatCount(policyStats.get(technology.id)?.companies.size ?? 0),
         header: 'Companies',
         id: 'companies',
+        sortValue: (technology) => policyStats.get(technology.id)?.companies.size ?? 0,
         width: '10%',
       },
       {
@@ -591,12 +596,14 @@ export function TechnologyExplorerPage() {
         },
         header: 'Countries',
         id: 'countries',
+        sortValue: (technology) => policyStats.get(technology.id)?.countries.size ?? 0,
         width: '16%',
       },
       {
         cell: (technology) => formatDate(policyStats.get(technology.id)?.latestPolicyDate),
         header: 'Latest Policy',
         id: 'latestPolicy',
+        sortValue: (technology) => policyStats.get(technology.id)?.latestPolicyDate,
         width: '12%',
       },
       {
