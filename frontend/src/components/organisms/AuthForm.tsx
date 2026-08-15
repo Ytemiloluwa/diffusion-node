@@ -18,7 +18,7 @@ type AuthFormFields = {
 };
 
 const initialFields: AuthFormFields = {
-  apiKeyLabel: 'Dashboard session',
+  apiKeyLabel: 'Local development key',
   confirmPassword: '',
   email: '',
   password: '',
@@ -194,7 +194,7 @@ export function AuthForm({ className, defaultMode = 'login' }: AuthFormProps) {
           ) : null}
 
           <Input
-            helperText="Used for the API key created with this session."
+            helperText="Label the API key by purpose, such as local development or CI."
             label="API key label"
             maxLength={80}
             name="apiKeyLabel"

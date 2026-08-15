@@ -12,31 +12,12 @@ import {
   RefreshCw,
   ServerCog,
   ShieldCheck,
-  UserRound,
 } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
 import { Badge, Button, IconButton, Input, Panel, Spinner } from '@/components/atoms';
 import { ApiKeyRow } from '@/components/molecules';
 import { DashboardShell } from '@/components/templates';
 import { API_BASE_URL_ENV_VAR, getApiBaseUrl, type ApiKeySummary, type UserProfile } from '@/lib/api';
 import { useAuthStore } from '@/store';
-
-type MetricTone = 'amber' | 'emerald' | 'sky' | 'slate';
-
-type Metric = {
-  detail: string;
-  icon: LucideIcon;
-  label: string;
-  tone: MetricTone;
-  value: string;
-};
-
-const metricToneClasses: Record<MetricTone, string> = {
-  amber: 'bg-warning-soft text-warning ring-warning-line',
-  emerald: 'bg-success-soft text-success ring-success-line',
-  sky: 'bg-info-soft text-info ring-info-line',
-  slate: 'bg-surface-muted text-ink-soft ring-line',
-};
 
 const formatDate = (value?: string | null): string => {
   if (!value) {
@@ -105,25 +86,6 @@ const maskApiKeySummary = (apiKey: ApiKeySummary): string => {
   return `Stored as hash (${suffix})`;
 };
 
-function MetricCard({ detail, icon: Icon, label, tone, value }: Metric) {
-  return (
-    <section className="rounded-panel border border-line bg-surface p-4 shadow-panel">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-sm font-medium text-muted">{label}</p>
-          <p className="mt-3 text-3xl font-semibold tracking-normal text-ink">{value}</p>
-        </div>
-        <span
-          className={`flex size-10 shrink-0 items-center justify-center rounded-control ring-1 ring-inset ${metricToneClasses[tone]}`}
-        >
-          <Icon aria-hidden="true" size={19} strokeWidth={2} />
-        </span>
-      </div>
-      <p className="mt-3 text-sm text-muted">{detail}</p>
-    </section>
-  );
-}
-
 function SettingRow({
   action,
   label,
@@ -156,7 +118,7 @@ export function DeveloperSettingsPage() {
   const [hasHydrated, setHasHydrated] = useState(false);
   const [isCreatingApiKey, setIsCreatingApiKey] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [newApiKeyLabel, setNewApiKeyLabel] = useState('Dashboard session');
+  const [newApiKeyLabel, setNewApiKeyLabel] = useState('Local development key');
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [revokingApiKeyId, setRevokingApiKeyId] = useState<string | null>(null);
 
@@ -275,7 +237,7 @@ export function DeveloperSettingsPage() {
               }
             : currentProfile,
         );
-        setNewApiKeyLabel('Dashboard session');
+        setNewApiKeyLabel('Local development key');
         window.setTimeout(() => {
           void refreshProfile();
         }, 0);
@@ -314,39 +276,6 @@ export function DeveloperSettingsPage() {
 
   const activeApiKeys = profile?.apiKeys ?? [];
   const displayUser = profile ?? user;
-  const metrics = useMemo<Metric[]>(
-    () => [
-      {
-        detail: displayUser?.role ?? 'No active role',
-        icon: UserRound,
-        label: 'Signed-in user',
-        tone: 'slate',
-        value: displayUser ? getDisplayName(displayUser.email) : 'Not loaded',
-      },
-      {
-        detail: 'Bearer token present in the current browser session',
-        icon: ShieldCheck,
-        label: 'Session',
-        tone: accessToken ? 'emerald' : 'amber',
-        value: accessToken ? 'Active' : 'Missing',
-      },
-      {
-        detail: 'Active credentials returned by the profile API',
-        icon: KeyRound,
-        label: 'API keys',
-        tone: activeApiKeys.length ? 'sky' : 'slate',
-        value: formatCount(activeApiKeys.length),
-      },
-      {
-        detail: API_BASE_URL_ENV_VAR,
-        icon: ServerCog,
-        label: 'API target',
-        tone: apiBaseUrl ? 'emerald' : 'amber',
-        value: apiBaseUrl ? 'Configured' : 'Missing',
-      },
-    ],
-    [accessToken, activeApiKeys.length, apiBaseUrl, displayUser],
-  );
 
   return (
     <DashboardShell
@@ -370,7 +299,7 @@ export function DeveloperSettingsPage() {
         </>
       }
       activeItem="developer-settings"
-      description="Review authenticated profile, active API credentials, and runtime API configuration."
+      description="Manage account details, integration API keys, and the API endpoint used by this workspace."
       eyebrow="Developer settings"
       title="Developer Settings"
       userInitials={getInitials(displayUser?.email)}
@@ -385,27 +314,12 @@ export function DeveloperSettingsPage() {
         </Panel>
       ) : null}
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {isLoading
-          ? Array.from({ length: 4 }, (_, index) => (
-              <section
-                aria-hidden="true"
-                className="rounded-panel border border-line bg-surface p-4 shadow-panel"
-                key={index}
-              >
-                <div className="h-4 w-28 rounded-control bg-line" />
-                <div className="mt-4 h-8 w-24 rounded-control bg-line" />
-                <div className="mt-4 h-4 w-40 rounded-control bg-line" />
-              </section>
-            ))
-          : metrics.map((metric) => <MetricCard key={metric.label} {...metric} />)}
-      </div>
-
-      <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1fr)_24rem]">
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_26rem]">
         <div className="min-w-0 space-y-5">
           <Panel
             actions={<Badge tone={displayUser ? 'emerald' : 'slate'}>{displayUser?.role ?? 'Unknown'}</Badge>}
-            title="Profile"
+            description="This is the authenticated account currently using the workspace."
+            title="Account"
           >
             {isLoading ? (
               <div className="flex items-center gap-3 text-sm text-muted">
@@ -463,7 +377,7 @@ export function DeveloperSettingsPage() {
           {lastIssuedApiKey ? (
             <Panel
               actions={<Badge tone="amber">One-time value</Badge>}
-              description="This raw credential is only available in the current login response."
+              description="Copy this new key now; it will not be shown again after refresh or sign-out."
               title="Latest Issued API Key"
             >
               <ApiKeyRow
@@ -477,7 +391,7 @@ export function DeveloperSettingsPage() {
 
           <Panel
             actions={<Badge tone="slate">{formatCount(activeApiKeys.length)} active</Badge>}
-            description="Active key summaries returned by the authenticated profile endpoint."
+            description="Create named keys for scripts, CI jobs, or integrations. Raw key values are shown only once."
             title="API Keys"
           >
             <form
@@ -489,7 +403,7 @@ export function DeveloperSettingsPage() {
                 label="New API key label"
                 maxLength={80}
                 onChange={(event) => setNewApiKeyLabel(event.target.value)}
-                placeholder="Dashboard session"
+                placeholder="Local development key"
                 value={newApiKeyLabel}
               />
               <Button
@@ -522,15 +436,18 @@ export function DeveloperSettingsPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-muted">No active API keys returned.</p>
+              <p className="text-sm text-muted">No active API keys yet.</p>
             )}
           </Panel>
         </div>
 
         <aside className="space-y-5">
-          <Panel actions={<Badge tone={apiBaseUrl ? 'emerald' : 'amber'}>{apiBaseUrl ? 'Ready' : 'Missing'}</Badge>} title="API Runtime">
+          <Panel
+            actions={<Badge tone={apiBaseUrl ? 'emerald' : 'amber'}>{apiBaseUrl ? 'Ready' : 'Missing'}</Badge>}
+            description="These values come from the deployment environment, not from user-entered settings."
+            title="Environment"
+          >
             <dl>
-              <SettingRow label="Environment" value={API_BASE_URL_ENV_VAR} />
               <SettingRow
                 action={
                   apiBaseUrl ? (
@@ -549,7 +466,7 @@ export function DeveloperSettingsPage() {
                     />
                   ) : null
                 }
-                label="Base URL"
+                label="API base URL"
                 value={
                   apiBaseUrl ? (
                     <span className="break-all font-mono text-xs">{apiBaseUrl}</span>
@@ -558,6 +475,7 @@ export function DeveloperSettingsPage() {
                   )
                 }
               />
+              <SettingRow label="Variable" value={<span className="font-mono text-xs">{API_BASE_URL_ENV_VAR}</span>} />
               <SettingRow
                 action={
                   apiDocsUrl ? (
@@ -573,13 +491,17 @@ export function DeveloperSettingsPage() {
                     </a>
                   ) : null
                 }
-                label="Docs"
+                label="API docs"
                 value={apiDocsUrl ? <span className="break-all font-mono text-xs">{apiDocsUrl}</span> : 'Not set'}
               />
             </dl>
           </Panel>
 
-          <Panel title="Session">
+          <Panel
+            actions={<Badge tone={accessToken ? 'emerald' : 'amber'}>{accessToken ? 'Signed in' : 'Missing'}</Badge>}
+            description="This reflects the current browser login, not an API key."
+            title="Browser Access"
+          >
             <dl>
               <SettingRow
                 label="Access token"
@@ -600,15 +522,15 @@ export function DeveloperSettingsPage() {
             <div className="grid gap-3 text-sm text-muted">
               <div className="flex items-start gap-2">
                 <ShieldCheck aria-hidden="true" className="mt-0.5 size-4 text-success" strokeWidth={2} />
-                <p>API keys are stored hashed on the server.</p>
+                <p>API keys are stored as hashes on the server.</p>
               </div>
               <div className="flex items-start gap-2">
                 <KeyRound aria-hidden="true" className="mt-0.5 size-4 text-info" strokeWidth={2} />
-                <p>Existing raw API key values are not returned by the profile endpoint.</p>
+                <p>Raw key values are shown once, immediately after creation.</p>
               </div>
               <div className="flex items-start gap-2">
                 <ServerCog aria-hidden="true" className="mt-0.5 size-4 text-warning" strokeWidth={2} />
-                <p>Credential creation and revocation require backend endpoints before controls are enabled.</p>
+                <p>Revoking a key disables future API-key authentication for that credential.</p>
               </div>
             </div>
           </Panel>
