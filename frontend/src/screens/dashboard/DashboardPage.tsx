@@ -15,7 +15,7 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import { Badge, Button, CountryFlag, Panel, Spinner, type BadgeProps } from '@/components/atoms';
 import { PolicyCard } from '@/components/molecules';
-import { DataTable, type DataTableColumn } from '@/components/organisms';
+import { DataTable, TimelineFeed, type DataTableColumn, type TimelineFeedItem } from '@/components/organisms';
 import { DashboardShell } from '@/components/templates';
 import {
   listCompanies,
@@ -420,6 +420,36 @@ export function DashboardPage() {
     [data.policies],
   );
 
+  const timelineFeedItems = useMemo<TimelineFeedItem[]>(
+    () =>
+      data.timeline.map((event) => ({
+        body: event.description ?? event.eventType,
+        footer: event.sourceUrl ? (
+          <a
+            className="inline-flex items-center gap-1 font-medium text-brand hover:text-brand-hover"
+            href={event.sourceUrl}
+            rel="noreferrer"
+            target="_blank"
+          >
+            {event.sourceName ?? 'Source'}
+            <ExternalLink aria-hidden="true" size={12} strokeWidth={2} />
+          </a>
+        ) : event.sourceName ? (
+          <span>{event.sourceName}</span>
+        ) : null,
+        id: event.id,
+        marker: <CalendarDays aria-hidden="true" size={16} strokeWidth={2} />,
+        metadata: [
+          {
+            content: formatDate(event.eventDate),
+            id: 'date',
+          },
+        ],
+        title: event.policy?.title ?? event.eventType,
+      })),
+    [data.timeline],
+  );
+
   const topCountries = useMemo(
     () =>
       [...data.countries]
@@ -537,48 +567,14 @@ export function DashboardPage() {
             description="Most recent timeline events in the curated dataset."
             title="Regulatory Timeline"
           >
-            {isLoading ? (
-              <div className="flex items-center gap-3 text-sm text-muted">
-                <Spinner label="Loading timeline" />
-                <span>Loading timeline</span>
-              </div>
-            ) : data.timeline.length ? (
-              <div className="space-y-4">
-                {data.timeline.map((event) => (
-                  <div className="flex gap-3" key={event.id}>
-                    <span className="mt-1 flex size-8 shrink-0 items-center justify-center rounded-control bg-brand-soft text-brand">
-                      <CalendarDays aria-hidden="true" size={16} strokeWidth={2} />
-                    </span>
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-ink">
-                        {event.policy?.title ?? event.eventType}
-                      </p>
-                      <p className="mt-1 text-sm text-muted">
-                        {event.description ?? event.eventType}
-                      </p>
-                      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
-                        <span>{formatDate(event.eventDate)}</span>
-                        {event.sourceUrl ? (
-                          <a
-                            className="inline-flex items-center gap-1 font-medium text-brand hover:text-brand-hover"
-                            href={event.sourceUrl}
-                            rel="noreferrer"
-                            target="_blank"
-                          >
-                            {event.sourceName ?? 'Source'}
-                            <ExternalLink aria-hidden="true" size={12} strokeWidth={2} />
-                          </a>
-                        ) : event.sourceName ? (
-                          <span>{event.sourceName}</span>
-                        ) : null}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-muted">No timeline events found.</p>
-            )}
+            <TimelineFeed
+              emptyDescription={null}
+              emptyTitle="No timeline events found."
+              isLoading={isLoading}
+              items={timelineFeedItems}
+              loadingLabel="Loading timeline"
+              variant="compact"
+            />
           </Panel>
 
           <Panel

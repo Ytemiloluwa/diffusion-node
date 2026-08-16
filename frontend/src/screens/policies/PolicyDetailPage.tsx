@@ -17,6 +17,7 @@ import {
   ShieldAlert,
 } from 'lucide-react';
 import { Badge, Button, CountryFlag, Panel, Spinner, type BadgeProps } from '@/components/atoms';
+import { TimelineFeed, type TimelineFeedItem } from '@/components/organisms';
 import { DashboardShell } from '@/components/templates';
 import {
   getPolicy,
@@ -154,55 +155,6 @@ function TimelineStatusBadge({ status }: { status: PolicyStatus | null }) {
   }
 
   return <Badge tone={statusTones[status]}>{statusLabels[status]}</Badge>;
-}
-
-function TimelineEntry({ item }: { item: PolicyTimelineItem }) {
-  const isRevision = item.type === 'revision';
-
-  return (
-    <li className="relative pl-11">
-      <span className="absolute left-0 top-1 flex size-8 items-center justify-center rounded-control bg-brand-soft text-brand ring-1 ring-inset ring-brand-line">
-        {isRevision ? (
-          <GitBranch aria-hidden="true" size={16} strokeWidth={2} />
-        ) : (
-          <CalendarDays aria-hidden="true" size={16} strokeWidth={2} />
-        )}
-      </span>
-
-      <div className="rounded-panel border border-line bg-surface p-4 shadow-panel">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div className="min-w-0">
-            <p className="text-sm font-semibold text-ink">
-              {isRevision ? 'Status revision' : item.eventType}
-            </p>
-            <p className="mt-1 text-sm text-muted">{formatDate(item.date)}</p>
-          </div>
-          {isRevision ? (
-            <div className="flex flex-wrap items-center gap-2">
-              <TimelineStatusBadge status={item.previousStatus} />
-              <span className="text-xs font-medium text-subtle">to</span>
-              <TimelineStatusBadge status={item.newStatus} />
-            </div>
-          ) : null}
-        </div>
-
-        {isRevision ? (
-          <p className="mt-3 text-sm leading-6 text-muted">
-            {item.changeSummary ?? 'No revision summary provided.'}
-          </p>
-        ) : (
-          <>
-            <p className="mt-3 text-sm leading-6 text-muted">
-              {item.description ?? 'No event description provided.'}
-            </p>
-            <div className="mt-3">
-              <ExternalRecordLink href={item.sourceUrl} label={item.sourceName ?? 'Source pending'} />
-            </div>
-          </>
-        )}
-      </div>
-    </li>
-  );
 }
 
 function SourceList({ documents, sources }: { documents: Document[]; sources: PolicySource[] }) {
@@ -407,6 +359,44 @@ export function PolicyDetailPage({ policyId }: PolicyDetailPageProps) {
     [timeline],
   );
 
+  const timelineFeedItems = useMemo<TimelineFeedItem[]>(
+    () =>
+      timelineItems.map((item) => {
+        const isRevision = item.type === 'revision';
+
+        return {
+          actions: isRevision ? (
+            <>
+              <TimelineStatusBadge status={item.previousStatus} />
+              <span className="text-xs font-medium text-subtle">to</span>
+              <TimelineStatusBadge status={item.newStatus} />
+            </>
+          ) : null,
+          body: isRevision
+            ? item.changeSummary ?? 'No revision summary provided.'
+            : item.description ?? 'No event description provided.',
+          footer: isRevision ? null : (
+            <ExternalRecordLink href={item.sourceUrl} label={item.sourceName ?? 'Source pending'} />
+          ),
+          id: `${item.type}-${item.id}`,
+          marker: isRevision ? (
+            <GitBranch aria-hidden="true" size={16} strokeWidth={2} />
+          ) : (
+            <CalendarDays aria-hidden="true" size={16} strokeWidth={2} />
+          ),
+          metadata: [
+            {
+              content: formatDate(item.date),
+              icon: <CalendarDays aria-hidden="true" size={14} strokeWidth={2} />,
+              id: 'date',
+            },
+          ],
+          title: isRevision ? 'Status revision' : item.eventType,
+        };
+      }),
+    [timelineItems],
+  );
+
   const primarySource = policy?.sources.find((source) => source.sourceUrl) ?? policy?.sources[0];
 
   return (
@@ -508,15 +498,11 @@ export function PolicyDetailPage({ policyId }: PolicyDetailPageProps) {
               description="Revisions and source-backed events ordered by date."
               title="Policy Timeline"
             >
-              {timelineItems.length ? (
-                <ol className="relative space-y-4 before:absolute before:left-4 before:top-2 before:h-[calc(100%-1rem)] before:w-px before:bg-line">
-                  {timelineItems.map((item) => (
-                    <TimelineEntry item={item} key={`${item.type}-${item.id}`} />
-                  ))}
-                </ol>
-              ) : (
-                <EmptyPanelText>No timeline entries linked to this policy.</EmptyPanelText>
-              )}
+              <TimelineFeed
+                emptyDescription="No revisions or source-backed events are linked to this policy yet."
+                emptyTitle="No timeline entries linked to this policy"
+                items={timelineFeedItems}
+              />
             </Panel>
 
             <div className="grid gap-5 xl:grid-cols-2">

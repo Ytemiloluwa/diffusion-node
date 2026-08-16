@@ -6,5 +6,7 @@ export { DataTable } from './DataTable';
 export type { DataTableColumn, DataTableProps } from './DataTable';
 export { NavigationSidebar } from './NavigationSidebar';
 export type { NavigationItemId, NavigationSidebarProps } from './NavigationSidebar';
+export { TimelineFeed } from './TimelineFeed';
+export type { TimelineFeedItem, TimelineFeedLink, TimelineFeedMetadata, TimelineFeedProps } from './TimelineFeed';
 export { WorldExposureMap } from './WorldExposureMap';
 export type { MapCountryDatum, MapExposureMode, WorldExposureMapProps } from './WorldExposureMap';
