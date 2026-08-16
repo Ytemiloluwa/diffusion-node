@@ -1,3 +1,11 @@
+databases:
+  - name: diffusion-node-db
+    databaseName: diffusion_node
+    user: diffusion_node
+    plan: basic-256mb
+    region: oregon
+    postgresMajorVersion: "17"
+
 services:
   - type: web
     name: diffusion-node-api
@@ -16,7 +24,9 @@ services:
       - key: NODE_VERSION
         value: 24.14.0
       - key: DATABASE_URL
-        sync: false
+        fromDatabase:
+          name: diffusion-node-db
+          property: connectionString
       - key: JWT_SECRET
         generateValue: true
       - key: JWT_REFRESH_SECRET
