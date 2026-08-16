@@ -31,10 +31,22 @@ const hashApiKey = (apiKey: string): string => createHash('sha256').update(apiKe
 const seedId = (key: string): string => stableUuid(key);
 
 const policySourceUrl = {
+  'pol-2022-aug-wassenaar':
+    'https://www.federalregister.gov/documents/2022/08/15/2022-17125/implementation-of-certain-2021-wassenaar-arrangement-decisions-on-four-section-1758-technologies',
   'pol-2022-oct':
     'https://www.federalregister.gov/documents/2022/10/13/2022-21658/implementation-of-additional-export-controls-certain-advanced-computing-and-semiconductor',
+  'pol-2023-jan-macau':
+    'https://www.federalregister.gov/documents/2023/01/18/2023-00888/implementation-of-additional-export-controls-certain-advanced-computing-and-semiconductor',
+  'pol-2023-oct-entitylist':
+    'https://www.federalregister.gov/documents/2023/10/19/2023-23048/entity-list-additions',
+  'pol-2023-oct-sme':
+    'https://www.federalregister.gov/documents/2023/10/25/2023-23049/export-controls-on-semiconductor-manufacturing-items',
   'pol-2023-oct':
     'https://www.federalregister.gov/documents/2023/10/25/2023-23055/implementation-of-additional-export-controls-certain-advanced-computing-items-supercomputer-and',
+  'pol-2024-feb-entitylist':
+    'https://www.federalregister.gov/documents/2024/02/27/2024-03969/additions-of-entities-to-the-entity-list',
+  'pol-2024-sep-advanced-tech':
+    'https://www.federalregister.gov/documents/2024/09/06/2024-19633/commerce-control-list-additions-and-revisions-implementation-of-controls-on-advanced-technologies',
   'pol-2024-dec-fdpr':
     'https://www.federalregister.gov/documents/2024/12/05/2024-28270/foreign-produced-direct-product-rule-additions-and-refinements-to-controls-for-advanced-computing',
   'pol-2024-dec-entitylist':
@@ -53,6 +65,18 @@ const policySourceUrl = {
 
 const policies = [
   {
+    key: 'pol-2022-aug-wassenaar',
+    title:
+      'Implementation of Certain 2021 Wassenaar Arrangement Decisions on Four Section 1758 Technologies',
+    summary:
+      'Implements Wassenaar Arrangement controls for emerging Section 1758 technologies, including GAAFET ECAD software and ultra-wide bandgap semiconductor substrates.',
+    controlNumber: '87 FR 49979 / RIN 0694-AH91',
+    effectiveDate: date('2022-08-15'),
+    status: PolicyStatus.ACTIVE,
+    publishedDate: date('2022-08-15'),
+    documentUrl: 'https://www.govinfo.gov/content/pkg/FR-2022-08-15/pdf/2022-17125.pdf',
+  },
+  {
     key: 'pol-2022-oct',
     title:
       'Implementation of Additional Export Controls: Certain Advanced Computing and Semiconductor Manufacturing Items; Supercomputer and Semiconductor End Use; Entity List Modification',
@@ -65,6 +89,40 @@ const policies = [
     documentUrl: 'https://www.govinfo.gov/content/pkg/FR-2022-10-13/pdf/2022-21658.pdf',
   },
   {
+    key: 'pol-2023-jan-macau',
+    title:
+      'Implementation of Additional Export Controls: Certain Advanced Computing and Semiconductor Manufacturing Items; Macau',
+    summary:
+      'Extends the 2022 advanced computing and semiconductor manufacturing controls to Macau and adds Macau to relevant destination restrictions.',
+    controlNumber: '88 FR 2821 / RIN 0694-AI94',
+    effectiveDate: date('2023-01-17'),
+    status: PolicyStatus.SUPERSEDED,
+    publishedDate: date('2023-01-18'),
+    documentUrl: 'https://www.govinfo.gov/content/pkg/FR-2023-01-18/pdf/2023-00888.pdf',
+  },
+  {
+    key: 'pol-2023-oct-entitylist',
+    title: 'Entity List Additions',
+    summary:
+      'Adds advanced-computing, AI accelerator, and supercomputing-linked parties to the Entity List alongside the October 2023 controls update.',
+    controlNumber: '88 FR 71991 / RIN 0694-AJ41',
+    effectiveDate: date('2023-10-17'),
+    status: PolicyStatus.ACTIVE,
+    publishedDate: date('2023-10-19'),
+    documentUrl: 'https://www.govinfo.gov/content/pkg/FR-2023-10-19/pdf/2023-23048.pdf',
+  },
+  {
+    key: 'pol-2023-oct-sme',
+    title: 'Export Controls on Semiconductor Manufacturing Items',
+    summary:
+      'Adds and revises controls on semiconductor manufacturing equipment, related parts, components, accessories, and U.S. persons activities.',
+    controlNumber: '88 FR 73424 / RIN 0694-AJ23',
+    effectiveDate: date('2023-11-17'),
+    status: PolicyStatus.ACTIVE,
+    publishedDate: date('2023-10-25'),
+    documentUrl: 'https://www.govinfo.gov/content/pkg/FR-2023-10-25/pdf/2023-23049.pdf',
+  },
+  {
     key: 'pol-2023-oct',
     title:
       'Implementation of Additional Export Controls: Certain Advanced Computing Items; Supercomputer and Semiconductor End Use; Updates and Corrections',
@@ -75,6 +133,29 @@ const policies = [
     status: PolicyStatus.ACTIVE,
     publishedDate: date('2023-10-25'),
     documentUrl: 'https://www.govinfo.gov/content/pkg/FR-2023-10-25/pdf/2023-23055.pdf',
+  },
+  {
+    key: 'pol-2024-feb-entitylist',
+    title: 'Additions of Entities to the Entity List',
+    summary:
+      'Adds parties in China, India, Kyrgyzstan, Russia, South Korea, Turkey, and the United Arab Emirates for activities contrary to U.S. national security or foreign-policy interests.',
+    controlNumber: '89 FR 14385 / RIN 0694-AJ54',
+    effectiveDate: date('2024-02-23'),
+    status: PolicyStatus.ACTIVE,
+    publishedDate: date('2024-02-27'),
+    documentUrl: 'https://www.govinfo.gov/content/pkg/FR-2024-02-27/pdf/2024-03969.pdf',
+  },
+  {
+    key: 'pol-2024-sep-advanced-tech',
+    title:
+      'Commerce Control List Additions and Revisions; Implementation of Controls on Advanced Technologies Consistent With Controls Implemented by International Partners',
+    summary:
+      'Adds and revises Commerce Control List controls for quantum, semiconductor, additive manufacturing, and GAAFET-related advanced technologies.',
+    controlNumber: '89 FR 72926 / RIN 0694-AJ60',
+    effectiveDate: date('2024-09-06'),
+    status: PolicyStatus.ACTIVE,
+    publishedDate: date('2024-09-06'),
+    documentUrl: 'https://www.govinfo.gov/content/pkg/FR-2024-09-06/pdf/2024-19633.pdf',
   },
   {
     key: 'pol-2024-dec-fdpr',
@@ -169,6 +250,7 @@ const technologyCategories = [
   { key: 'cat-quantum', name: 'Quantum Computing', isActiveInV1: false },
   { key: 'cat-cloud', name: 'Cloud Computing', isActiveInV1: false },
   { key: 'cat-sw', name: 'Software and EDA', isActiveInV1: false },
+  { key: 'cat-advanced-mfg', name: 'Advanced Manufacturing', isActiveInV1: false },
 ] as const;
 
 const technologies = [
@@ -228,6 +310,60 @@ const technologies = [
       "Trained parameters of closed-weight AI models above the AI Diffusion Rule's compute threshold.",
     categoryKey: 'cat-ai',
   },
+  {
+    key: 'tech-10',
+    name: 'Ultra-Wide Bandgap Semiconductor Substrates',
+    description: 'Gallium oxide and diamond substrates used for advanced power semiconductors.',
+    categoryKey: 'cat-semi',
+  },
+  {
+    key: 'tech-11',
+    name: 'GAAFET ECAD Software (ECCN 3D006)',
+    description:
+      'Electronic computer-aided design software specially designed for gate-all-around transistor development.',
+    categoryKey: 'cat-sw',
+  },
+  {
+    key: 'tech-12',
+    name: 'Semiconductor Manufacturing Equipment (Dry Etch and Deposition)',
+    description:
+      'Deposition, etch, and related wafer-processing equipment for advanced-node fabrication.',
+    categoryKey: 'cat-semi',
+  },
+  {
+    key: 'tech-13',
+    name: 'EUV Masks and Reticles',
+    description:
+      'Masks, reticles, and related tooling used in extreme ultraviolet lithography workflows.',
+    categoryKey: 'cat-semi',
+  },
+  {
+    key: 'tech-14',
+    name: 'Cryogenic CMOS and Quantum-Limited Amplifiers',
+    description:
+      'Low-temperature electronics and amplifiers used in quantum computing control stacks.',
+    categoryKey: 'cat-quantum',
+  },
+  {
+    key: 'tech-15',
+    name: 'Cryogenic Wafer Probing and Cooling Systems',
+    description:
+      'Cryogenic test, probing, and cooling systems used for quantum and advanced semiconductor devices.',
+    categoryKey: 'cat-quantum',
+  },
+  {
+    key: 'tech-16',
+    name: 'Quantum Computers and Qubit Assemblies',
+    description: 'Quantum processing systems, qubit devices, and supporting assemblies.',
+    categoryKey: 'cat-quantum',
+  },
+  {
+    key: 'tech-17',
+    name: 'Metal Additive Manufacturing Equipment',
+    description:
+      'Additive manufacturing equipment and process controls used for advanced industrial production.',
+    categoryKey: 'cat-advanced-mfg',
+  },
 ] as const;
 
 const countries = [
@@ -248,6 +384,11 @@ const countries = [
     isoCode: 'ARE',
     tierClassification: 'Group A:6',
   },
+  { key: 'country-rus', name: 'Russia', isoCode: 'RUS', tierClassification: 'Group D:5' },
+  { key: 'country-kgz', name: 'Kyrgyzstan', isoCode: 'KGZ', tierClassification: 'Group D:1' },
+  { key: 'country-can', name: 'Canada', isoCode: 'CAN', tierClassification: 'Group A:1' },
+  { key: 'country-deu', name: 'Germany', isoCode: 'DEU', tierClassification: 'Group A:1' },
+  { key: 'country-gbr', name: 'United Kingdom', isoCode: 'GBR', tierClassification: 'Group A:1' },
 ] as const;
 
 const restrictionTypes = [
@@ -295,6 +436,12 @@ const restrictionTypes = [
     name: 'Worldwide License Requirement (Tiered)',
     description:
       'A global tiered licensing framework applies by destination and transaction profile.',
+  },
+  {
+    key: 'rest-09',
+    name: 'Worldwide License Requirement (NS/RS)',
+    description:
+      'Controls based on national security or regional stability reasons apply by destination and item classification.',
   },
 ] as const;
 
@@ -432,13 +579,95 @@ const companies = [
     entityListStatus: 'Clear',
     aliases: ['TSMC'],
   },
+  {
+    key: 'comp-cadence',
+    name: 'Cadence Design Systems, Inc.',
+    hqCountryKey: 'country-usa',
+    entityListStatus: 'Clear',
+    aliases: ['Cadence', 'Cadence Design Systems'],
+  },
+  {
+    key: 'comp-synopsys',
+    name: 'Synopsys, Inc.',
+    hqCountryKey: 'country-usa',
+    entityListStatus: 'Clear',
+    aliases: ['Synopsys'],
+  },
+  {
+    key: 'comp-siemens-eda',
+    name: 'Siemens EDA',
+    hqCountryKey: 'country-deu',
+    entityListStatus: 'Clear',
+    aliases: ['Siemens EDA', 'Mentor Graphics'],
+  },
+  {
+    key: 'comp-lightcloud',
+    name: 'Light Cloud (Hangzhou) Technology Co., Ltd.',
+    hqCountryKey: 'country-chn',
+    entityListStatus: 'Entity List',
+    aliases: ['Light Cloud'],
+  },
+  {
+    key: 'comp-superburning',
+    name: 'Superburning Semiconductor (Nanjing) Co., Ltd.',
+    hqCountryKey: 'country-chn',
+    entityListStatus: 'Entity List',
+    aliases: ['Superburning Semiconductor'],
+  },
+  {
+    key: 'comp-suzhou-xinyan',
+    name: 'Suzhou Xinyan Holdings Co., Ltd.',
+    hqCountryKey: 'country-chn',
+    entityListStatus: 'Entity List',
+    aliases: ['Suzhou Xinyan'],
+  },
+  {
+    key: 'comp-daesung',
+    name: 'Daesung International Trading',
+    hqCountryKey: 'country-kor',
+    entityListStatus: 'Entity List',
+    aliases: ['Daesung'],
+  },
+  {
+    key: 'comp-muller-markt',
+    name: 'Muller Markt LLC',
+    hqCountryKey: 'country-kgz',
+    entityListStatus: 'Entity List',
+    aliases: ['Muller Markt'],
+  },
+  {
+    key: 'comp-sovtest',
+    name: 'Sovtest Comp',
+    hqCountryKey: 'country-rus',
+    entityListStatus: 'Entity List',
+    aliases: ['Sovtest'],
+  },
 ] as const;
 
 const jurisdictions = [
+  ['pol-2022-aug-wassenaar', 'country-chn', 'rest-01'],
+  ['pol-2022-aug-wassenaar', 'country-rus', 'rest-09'],
   ['pol-2022-oct', 'country-chn', 'rest-01'],
   ['pol-2022-oct', 'country-chn', 'rest-04'],
+  ['pol-2023-jan-macau', 'country-mac', 'rest-01'],
+  ['pol-2023-jan-macau', 'country-mac', 'rest-03'],
+  ['pol-2023-oct-entitylist', 'country-chn', 'rest-02'],
+  ['pol-2023-oct-entitylist', 'country-chn', 'rest-03'],
+  ['pol-2023-oct-sme', 'country-chn', 'rest-01'],
+  ['pol-2023-oct-sme', 'country-mac', 'rest-01'],
+  ['pol-2023-oct-sme', 'country-chn', 'rest-04'],
   ['pol-2023-oct', 'country-mac', 'rest-01'],
   ['pol-2023-oct', 'country-chn', 'rest-03'],
+  ['pol-2024-feb-entitylist', 'country-chn', 'rest-02'],
+  ['pol-2024-feb-entitylist', 'country-ind', 'rest-02'],
+  ['pol-2024-feb-entitylist', 'country-kgz', 'rest-02'],
+  ['pol-2024-feb-entitylist', 'country-rus', 'rest-02'],
+  ['pol-2024-feb-entitylist', 'country-kor', 'rest-02'],
+  ['pol-2024-feb-entitylist', 'country-tur', 'rest-02'],
+  ['pol-2024-feb-entitylist', 'country-are', 'rest-02'],
+  ['pol-2024-sep-advanced-tech', 'country-chn', 'rest-09'],
+  ['pol-2024-sep-advanced-tech', 'country-rus', 'rest-09'],
+  ['pol-2024-sep-advanced-tech', 'country-irn', 'rest-09'],
   ['pol-2024-dec-fdpr', 'country-chn', 'rest-03'],
   ['pol-2024-dec-entitylist', 'country-chn', 'rest-02'],
   ['pol-2025-jan-diffusion', 'country-chn', 'rest-08'],
@@ -457,6 +686,24 @@ const jurisdictions = [
 
 const policyRevisions = [
   {
+    key: 'rev-001',
+    policyKey: 'pol-2022-aug-wassenaar',
+    revisionDate: date('2022-08-15'),
+    previousStatus: PolicyStatus.DRAFT,
+    newStatus: PolicyStatus.ACTIVE,
+    changeSummary:
+      'Initial Wassenaar implementation takes effect for four emerging Section 1758 technology areas.',
+  },
+  {
+    key: 'rev-002',
+    policyKey: 'pol-2022-aug-wassenaar',
+    revisionDate: date('2022-10-14'),
+    previousStatus: PolicyStatus.ACTIVE,
+    newStatus: PolicyStatus.ACTIVE,
+    changeSummary:
+      'Delayed ECAD software controls become effective after the short implementation window.',
+  },
+  {
     key: 'rev-101',
     policyKey: 'pol-2022-oct',
     revisionDate: date('2022-10-07'),
@@ -473,6 +720,24 @@ const policyRevisions = [
     changeSummary: 'Macau amendment adds Macau (Country Group D:5) to destination controls.',
   },
   {
+    key: 'rev-111',
+    policyKey: 'pol-2023-jan-macau',
+    revisionDate: date('2023-01-17'),
+    previousStatus: PolicyStatus.DRAFT,
+    newStatus: PolicyStatus.ACTIVE,
+    changeSummary:
+      'Macau is added to the 2022 advanced computing and semiconductor manufacturing destination controls.',
+  },
+  {
+    key: 'rev-112',
+    policyKey: 'pol-2023-jan-macau',
+    revisionDate: date('2023-10-17'),
+    previousStatus: PolicyStatus.ACTIVE,
+    newStatus: PolicyStatus.SUPERSEDED,
+    changeSummary:
+      'Macau provisions are carried forward into the October 2023 advanced-computing controls update.',
+  },
+  {
     key: 'rev-103',
     policyKey: 'pol-2022-oct',
     revisionDate: date('2023-10-17'),
@@ -480,6 +745,33 @@ const policyRevisions = [
     newStatus: PolicyStatus.SUPERSEDED,
     changeSummary:
       'Superseded by the 2023 advanced computing and semiconductor manufacturing updates.',
+  },
+  {
+    key: 'rev-211',
+    policyKey: 'pol-2023-oct-entitylist',
+    revisionDate: date('2023-10-17'),
+    previousStatus: PolicyStatus.DRAFT,
+    newStatus: PolicyStatus.ACTIVE,
+    changeSummary:
+      'Entity List additions tied to advanced computing and supercomputing controls take effect.',
+  },
+  {
+    key: 'rev-221',
+    policyKey: 'pol-2023-oct-sme',
+    revisionDate: date('2023-10-17'),
+    previousStatus: PolicyStatus.DRAFT,
+    newStatus: PolicyStatus.ACTIVE,
+    changeSummary:
+      'Selected semiconductor manufacturing item controls and U.S. persons restrictions take effect.',
+  },
+  {
+    key: 'rev-222',
+    policyKey: 'pol-2023-oct-sme',
+    revisionDate: date('2023-11-17'),
+    previousStatus: PolicyStatus.ACTIVE,
+    newStatus: PolicyStatus.ACTIVE,
+    changeSummary:
+      'Remaining semiconductor manufacturing controls reach their full effective date.',
   },
   {
     key: 'rev-201',
@@ -497,6 +789,24 @@ const policyRevisions = [
     previousStatus: PolicyStatus.ACTIVE,
     newStatus: PolicyStatus.ACTIVE,
     changeSummary: 'Rule reaches its full enforcement effective date.',
+  },
+  {
+    key: 'rev-321',
+    policyKey: 'pol-2024-feb-entitylist',
+    revisionDate: date('2024-02-23'),
+    previousStatus: PolicyStatus.DRAFT,
+    newStatus: PolicyStatus.ACTIVE,
+    changeSummary:
+      'Entity List additions across seven jurisdictions become effective for listed parties.',
+  },
+  {
+    key: 'rev-421',
+    policyKey: 'pol-2024-sep-advanced-tech',
+    revisionDate: date('2024-09-06'),
+    previousStatus: PolicyStatus.DRAFT,
+    newStatus: PolicyStatus.ACTIVE,
+    changeSummary:
+      'Advanced technology CCL additions and revisions take effect alongside partner-aligned controls.',
   },
   {
     key: 'rev-301',
@@ -670,11 +980,200 @@ const timelineEvents = [
     sourceName: 'BIS Federal Register',
     sourceUrl: policySourceUrl['pol-2026-jan-licenserevision'],
   },
+  {
+    key: 'evt-10',
+    policyKey: 'pol-2022-aug-wassenaar',
+    eventDate: date('2022-08-15'),
+    eventType: 'Initial Publication',
+    description:
+      'BIS implements 2021 Wassenaar Arrangement decisions for four emerging Section 1758 technology areas.',
+    sourceName: 'BIS Federal Register',
+    sourceUrl: policySourceUrl['pol-2022-aug-wassenaar'],
+  },
+  {
+    key: 'evt-11',
+    policyKey: 'pol-2022-aug-wassenaar',
+    eventDate: date('2022-10-14'),
+    eventType: 'Delayed Effective Date',
+    description:
+      'Delayed ECAD software controls for GAAFET development become effective after the implementation window.',
+    sourceName: 'BIS Federal Register',
+    sourceUrl: policySourceUrl['pol-2022-aug-wassenaar'],
+  },
+  {
+    key: 'evt-12',
+    policyKey: 'pol-2023-jan-macau',
+    eventDate: date('2023-01-17'),
+    eventType: 'Macau Expansion',
+    description:
+      'BIS extends advanced computing and semiconductor manufacturing controls to Macau.',
+    sourceName: 'BIS Federal Register',
+    sourceUrl: policySourceUrl['pol-2023-jan-macau'],
+  },
+  {
+    key: 'evt-13',
+    policyKey: 'pol-2023-jan-macau',
+    eventDate: date('2023-01-18'),
+    eventType: 'Publication',
+    description: 'The Macau expansion rule is published in the Federal Register.',
+    sourceName: 'BIS Federal Register',
+    sourceUrl: policySourceUrl['pol-2023-jan-macau'],
+  },
+  {
+    key: 'evt-14',
+    policyKey: 'pol-2023-oct-entitylist',
+    eventDate: date('2023-10-17'),
+    eventType: 'Entity List Effective Date',
+    description:
+      'Entity List additions connected to advanced computing and supercomputing restrictions take effect.',
+    sourceName: 'BIS Federal Register',
+    sourceUrl: policySourceUrl['pol-2023-oct-entitylist'],
+  },
+  {
+    key: 'evt-15',
+    policyKey: 'pol-2023-oct-entitylist',
+    eventDate: date('2023-10-19'),
+    eventType: 'Publication',
+    description: 'The October 2023 Entity List additions are published in the Federal Register.',
+    sourceName: 'BIS Federal Register',
+    sourceUrl: policySourceUrl['pol-2023-oct-entitylist'],
+  },
+  {
+    key: 'evt-16',
+    policyKey: 'pol-2023-oct-sme',
+    eventDate: date('2023-10-17'),
+    eventType: 'Partial Effective Date',
+    description:
+      'Selected semiconductor manufacturing item controls and U.S. persons restrictions begin taking effect.',
+    sourceName: 'BIS Federal Register',
+    sourceUrl: policySourceUrl['pol-2023-oct-sme'],
+  },
+  {
+    key: 'evt-17',
+    policyKey: 'pol-2023-oct-sme',
+    eventDate: date('2023-11-17'),
+    eventType: 'Full Effective Date',
+    description:
+      'Remaining semiconductor manufacturing equipment controls reach their full effective date.',
+    sourceName: 'BIS Federal Register',
+    sourceUrl: policySourceUrl['pol-2023-oct-sme'],
+  },
+  {
+    key: 'evt-18',
+    policyKey: 'pol-2023-oct',
+    eventDate: date('2023-11-17'),
+    eventType: 'Full Effective Date',
+    description:
+      'Advanced computing updates reach full enforcement after the October 2023 implementation period.',
+    sourceName: 'BIS Federal Register',
+    sourceUrl: policySourceUrl['pol-2023-oct'],
+  },
+  {
+    key: 'evt-19',
+    policyKey: 'pol-2024-feb-entitylist',
+    eventDate: date('2024-02-23'),
+    eventType: 'Entity List Effective Date',
+    description:
+      'Entity List additions across seven jurisdictions become effective for listed parties.',
+    sourceName: 'BIS Federal Register',
+    sourceUrl: policySourceUrl['pol-2024-feb-entitylist'],
+  },
+  {
+    key: 'evt-20',
+    policyKey: 'pol-2024-feb-entitylist',
+    eventDate: date('2024-02-27'),
+    eventType: 'Publication',
+    description: 'The February 2024 Entity List additions are published in the Federal Register.',
+    sourceName: 'BIS Federal Register',
+    sourceUrl: policySourceUrl['pol-2024-feb-entitylist'],
+  },
+  {
+    key: 'evt-21',
+    policyKey: 'pol-2024-sep-advanced-tech',
+    eventDate: date('2024-09-06'),
+    eventType: 'Initial Publication',
+    description:
+      'BIS adds and revises controls for quantum, semiconductor, additive manufacturing, and GAAFET technologies.',
+    sourceName: 'BIS Federal Register',
+    sourceUrl: policySourceUrl['pol-2024-sep-advanced-tech'],
+  },
+  {
+    key: 'evt-22',
+    policyKey: 'pol-2024-sep-advanced-tech',
+    eventDate: date('2024-09-06'),
+    eventType: 'Partner-Aligned Controls',
+    description:
+      'Advanced technology controls are aligned with controls implemented by international partners.',
+    sourceName: 'BIS Federal Register',
+    sourceUrl: policySourceUrl['pol-2024-sep-advanced-tech'],
+  },
+  {
+    key: 'evt-23',
+    policyKey: 'pol-2024-dec-fdpr',
+    eventDate: date('2024-12-05'),
+    eventType: 'Initial Publication',
+    description:
+      'BIS publishes FDPR additions and refinements for advanced computing and semiconductor manufacturing items.',
+    sourceName: 'BIS Federal Register',
+    sourceUrl: policySourceUrl['pol-2024-dec-fdpr'],
+  },
+  {
+    key: 'evt-24',
+    policyKey: 'pol-2025-jan-duediligence',
+    eventDate: date('2025-01-16'),
+    eventType: 'Initial Publication',
+    description:
+      'Additional due diligence measures for advanced computing integrated circuits take effect.',
+    sourceName: 'BIS Federal Register',
+    sourceUrl: policySourceUrl['pol-2025-jan-duediligence'],
+  },
+  {
+    key: 'evt-25',
+    policyKey: 'pol-2025-jan-entitylist',
+    eventDate: date('2025-01-16'),
+    eventType: 'Entity List Effective Date',
+    description:
+      'Advanced-computing and semiconductor-linked parties are added to the Entity List.',
+    sourceName: 'BIS Federal Register',
+    sourceUrl: policySourceUrl['pol-2025-jan-entitylist'],
+  },
+  {
+    key: 'evt-26',
+    policyKey: 'pol-2025-sep-entitylist',
+    eventDate: date('2025-09-16'),
+    eventType: 'Publication',
+    description: 'The September 2025 Entity List additions and revisions are published.',
+    sourceName: 'BIS Federal Register',
+    sourceUrl: policySourceUrl['pol-2025-sep-entitylist'],
+  },
 ] as const;
 
 const policyTechnologies = {
+  'pol-2022-aug-wassenaar': ['tech-05', 'tech-10', 'tech-11'],
   'pol-2022-oct': ['tech-01', 'tech-03', 'tech-04', 'tech-06', 'tech-07', 'tech-08'],
+  'pol-2023-jan-macau': ['tech-01', 'tech-03', 'tech-04', 'tech-06', 'tech-07', 'tech-08'],
+  'pol-2023-oct-entitylist': ['tech-06', 'tech-07'],
+  'pol-2023-oct-sme': [
+    'tech-03',
+    'tech-04',
+    'tech-05',
+    'tech-08',
+    'tech-10',
+    'tech-12',
+    'tech-13',
+  ],
   'pol-2023-oct': ['tech-02', 'tech-06', 'tech-07'],
+  'pol-2024-feb-entitylist': ['tech-06', 'tech-12', 'tech-17'],
+  'pol-2024-sep-advanced-tech': [
+    'tech-05',
+    'tech-10',
+    'tech-11',
+    'tech-13',
+    'tech-14',
+    'tech-15',
+    'tech-16',
+    'tech-17',
+  ],
   'pol-2024-dec-fdpr': ['tech-01', 'tech-02', 'tech-03', 'tech-04', 'tech-08'],
   'pol-2024-dec-entitylist': ['tech-01', 'tech-02', 'tech-03', 'tech-04', 'tech-08'],
   'pol-2025-jan-diffusion': ['tech-06', 'tech-07', 'tech-09'],
@@ -685,6 +1184,13 @@ const policyTechnologies = {
 } as const;
 
 const policyCompanies = {
+  'pol-2022-aug-wassenaar': [
+    'comp-cadence',
+    'comp-synopsys',
+    'comp-siemens-eda',
+    'comp-tsmc',
+    'comp-intel',
+  ],
   'pol-2022-oct': [
     'comp-nvda',
     'comp-amd',
@@ -695,6 +1201,32 @@ const policyCompanies = {
     'comp-lrcx',
     'comp-amat',
   ],
+  'pol-2023-jan-macau': [
+    'comp-nvda',
+    'comp-amd',
+    'comp-intel',
+    'comp-huawei',
+    'comp-smic',
+    'comp-ymtc',
+  ],
+  'pol-2023-oct-entitylist': [
+    'comp-biren',
+    'comp-mthreads',
+    'comp-lightcloud',
+    'comp-superburning',
+    'comp-suzhou-xinyan',
+  ],
+  'pol-2023-oct-sme': [
+    'comp-amat',
+    'comp-lrcx',
+    'comp-asml',
+    'comp-asmi',
+    'comp-tel',
+    'comp-nikon',
+    'comp-advantest',
+    'comp-smic',
+    'comp-huawei',
+  ],
   'pol-2023-oct': [
     'comp-nvda',
     'comp-amd',
@@ -703,6 +1235,20 @@ const policyCompanies = {
     'comp-smic',
     'comp-biren',
     'comp-mthreads',
+  ],
+  'pol-2024-feb-entitylist': [
+    'comp-daesung',
+    'comp-muller-markt',
+    'comp-sovtest',
+    'comp-huawei',
+    'comp-smic',
+  ],
+  'pol-2024-sep-advanced-tech': [
+    'comp-cadence',
+    'comp-synopsys',
+    'comp-siemens-eda',
+    'comp-intel',
+    'comp-tsmc',
   ],
   'pol-2024-dec-fdpr': [
     'comp-amat',
