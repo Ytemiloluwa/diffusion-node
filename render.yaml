@@ -2,7 +2,7 @@ databases:
   - name: diffusion-node-db
     databaseName: diffusion_node
     user: diffusion_node
-    plan: basic-256mb
+    plan: free
     region: oregon
     postgresMajorVersion: "17"
 
@@ -10,11 +10,10 @@ services:
   - type: web
     name: diffusion-node-api
     runtime: node
-    plan: starter
+    plan: free
     region: oregon
     branch: main
-    buildCommand: npm ci && npm run prisma:generate && npm run build
-    preDeployCommand: npx prisma migrate deploy
+    buildCommand: npm ci && npm run prisma:generate && npx prisma migrate deploy && npm run build
     startCommand: npm run start
     healthCheckPath: /health
     autoDeployTrigger: commit
