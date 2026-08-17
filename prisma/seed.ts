@@ -30,6 +30,9 @@ const hashApiKey = (apiKey: string): string => createHash('sha256').update(apiKe
 
 const seedId = (key: string): string => stableUuid(key);
 
+const shouldSeedDemoCredentials =
+  process.env.SEED_DEMO_CREDENTIALS?.trim().toLowerCase() === 'true';
+
 const policySourceUrl = {
   'pol-2022-aug-wassenaar':
     'https://www.federalregister.gov/documents/2022/08/15/2022-17125/implementation-of-certain-2021-wassenaar-arrangement-decisions-on-four-section-1758-technologies',
@@ -1299,48 +1302,52 @@ const policyCompanies = {
 async function main() {
   console.log('Seeding curated diffusion-node policy data...');
 
-  const demoPasswordHash = await bcrypt.hash('password123', 12);
-  const seededUsers = new Map<string, { id: string }>();
+  if (shouldSeedDemoCredentials) {
+    const demoPasswordHash = await bcrypt.hash('password123', 12);
+    const seededUsers = new Map<string, { id: string }>();
 
-  for (const user of users) {
-    const result = await prisma.user.upsert({
-      where: { email: user.email },
+    for (const user of users) {
+      const result = await prisma.user.upsert({
+        where: { email: user.email },
+        update: {
+          passwordHash: demoPasswordHash,
+          role: user.role,
+        },
+        create: {
+          id: seedId(user.key),
+          email: user.email,
+          passwordHash: demoPasswordHash,
+          role: user.role,
+        },
+        select: { id: true },
+      });
+
+      seededUsers.set(user.key, result);
+    }
+
+    const developer = seededUsers.get('user-developer');
+    if (!developer) {
+      throw new Error('Seed developer user was not created.');
+    }
+
+    const demoApiKey = 'dn_dev_demo_key_please_rotate';
+    await prisma.apiKey.upsert({
+      where: { key: hashApiKey(demoApiKey) },
       update: {
-        passwordHash: demoPasswordHash,
-        role: user.role,
+        label: 'Seeded development API key',
+        revokedAt: null,
+        userId: developer.id,
       },
       create: {
-        id: seedId(user.key),
-        email: user.email,
-        passwordHash: demoPasswordHash,
-        role: user.role,
+        id: seedId('api-key-developer-demo'),
+        key: hashApiKey(demoApiKey),
+        label: 'Seeded development API key',
+        userId: developer.id,
       },
-      select: { id: true },
     });
-
-    seededUsers.set(user.key, result);
+  } else {
+    console.log('Skipping demo users and demo API key for production seed.');
   }
-
-  const developer = seededUsers.get('user-developer');
-  if (!developer) {
-    throw new Error('Seed developer user was not created.');
-  }
-
-  const demoApiKey = 'dn_dev_demo_key_please_rotate';
-  await prisma.apiKey.upsert({
-    where: { key: hashApiKey(demoApiKey) },
-    update: {
-      label: 'Seeded development API key',
-      revokedAt: null,
-      userId: developer.id,
-    },
-    create: {
-      id: seedId('api-key-developer-demo'),
-      key: hashApiKey(demoApiKey),
-      label: 'Seeded development API key',
-      userId: developer.id,
-    },
-  });
 
   for (const category of technologyCategories) {
     await prisma.technologyCategory.upsert({
@@ -1579,7 +1586,7 @@ async function main() {
 
   console.log(
     [
-      `Seeded ${users.length} users`,
+      shouldSeedDemoCredentials ? `${users.length} demo users` : '0 demo users',
       `${countries.length} countries`,
       `${companies.length} companies`,
       `${technologies.length} technologies`,
@@ -1588,7 +1595,9 @@ async function main() {
       `${Object.values(policyTechnologies).flat().length} policy-technology links`,
     ].join(', '),
   );
-  console.log(`Development API key: ${demoApiKey}`);
+  if (shouldSeedDemoCredentials) {
+    console.log('Development API key: dn_dev_demo_key_please_rotate');
+  }
 }
 
 main()
