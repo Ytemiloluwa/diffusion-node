@@ -4,7 +4,7 @@
   <h1>Diffusion Node</h1>
 
   <p>
-    Export-control intelligence for semiconductor, AI, and policy teams.
+    Export-control monitoring for semiconductor, AI, and policy teams.
   </p>
 
   <p>
@@ -18,38 +18,50 @@
   </p>
 
   <p>
+    <a href="#live-services">Live Services</a> -
     <a href="#features">Features</a> -
     <a href="#architecture">Architecture</a> -
-    <a href="#getting-started">Getting Started</a> -
+    <a href="#local-development">Local Development</a> -
     <a href="#api-reference">API Reference</a> -
     <a href="#testing">Testing</a> -
-    <a href="#troubleshooting">Troubleshooting</a> -
-    <a href="#contributing">Contributing</a>
+    <a href="#deployment">Deployment</a>
   </p>
 </div>
 
 ## Overview
 
-Diffusion Node is a full-stack policy intelligence workspace for tracking export-control rules, semiconductor restrictions, AI diffusion policy changes, affected companies, technologies, countries, source documents, and policy timelines.
+Diffusion Node is a full-stack policy monitoring workspace for tracking export-control rules, semiconductor restrictions, AI diffusion policy changes, affected companies, controlled technologies, jurisdictions, source documents, and regulatory timelines.
 
-The project combines a curated relational policy dataset, an Express and Prisma API, and a Next.js dashboard UI for exploring regulatory exposure across policies, companies, countries, technologies, and timeline events.
+The application combines a curated PostgreSQL policy dataset, an Express and Prisma API, and a Next.js dashboard for analysts who need to inspect how policy changes affect companies, countries, and technology categories.
+
+## Live Services
+
+| Service | URL |
+| --- | --- |
+| Frontend | [https://diffusion-node-frontend.vercel.app](https://diffusion-node-frontend.vercel.app) |
+| API health check | [https://diffusion-node-api.onrender.com/health](https://diffusion-node-api.onrender.com/health) |
+| API documentation | [https://diffusion-node-api.onrender.com/docs](https://diffusion-node-api.onrender.com/docs) |
+| API base URL | `https://diffusion-node-api.onrender.com/api/v1` |
+
+Production is deployed with Vercel for the frontend and Render for the backend API and PostgreSQL database.
 
 ## Project Status
 
-Diffusion Node is in active v1 development. The current application includes the core API, authenticated frontend workspace, curated seed data, route documentation, CI checks, and browser E2E coverage.
+Diffusion Node v1 is deployed and production data is seeded. The current release includes authenticated access, policy search, reference-data explorers, timeline views, API key management, OpenAPI documentation, CI checks, and browser E2E coverage for the authentication flow.
 
 ## Features
 
-- Authenticated dashboard workspace with JWT login, refresh tokens, API key issuance, and user profile access.
-- Policy explorer with cursor pagination and filters for search text, title, company, country, technology, year, source, and restriction type.
-- Policy detail pages with sources, documents, jurisdictions, linked companies, linked technologies, and policy timelines.
-- Country explorer with exposure metrics, restriction summaries, rankings, and a world choropleth map.
-- Technology explorer for semiconductor and AI technology categories affected by policy controls.
-- Company explorer for entity-list status, headquarters country, aliases, and policy exposure context.
-- Global timeline view for sourced regulatory events and linked policy records.
-- Developer settings screen for authenticated profile/session details and API key management.
-- Swagger UI and OpenAPI documentation for the backend API.
-- CI coverage for lint/typecheck, API/unit tests, frontend route smoke tests, and browser E2E auth flow.
+- JWT authentication with registration, login, refresh tokens, and authenticated profile access.
+- API key creation and revocation for signed-in users.
+- Dashboard summary for loaded policies, linked companies, linked technologies, and restricted countries.
+- Policy explorer with cursor pagination and filters for search text, company, country, technology, year, source, and restriction type.
+- Policy detail pages with source links, documents, jurisdictions, linked companies, linked technologies, and policy timelines.
+- Country explorer with restriction summaries, exposure rankings, flags, and a world choropleth map.
+- Company explorer with headquarters country, aliases, entity-list status, and policy exposure context.
+- Technology explorer for semiconductor, AI, lithography, EDA, and advanced-computing categories.
+- Global timeline for sourced regulatory events and linked policy records.
+- Developer settings for authenticated profile data, runtime API target, and API credential operations.
+- Swagger UI generated from the OpenAPI specification in the backend.
 
 ## Architecture
 
@@ -58,21 +70,21 @@ diffusion-node/
 |-- src/                    # Express API, controllers, routes, middleware, OpenAPI docs
 |-- prisma/                 # Prisma schema, migrations, curated seed data
 |-- frontend/               # Next.js dashboard workspace
-|-- tests/                  # Jest API/unit tests and route smoke coverage
-|-- tests/e2e/              # Playwright browser E2E flows
+|-- tests/                  # Jest API and route coverage
+|-- tests/e2e/              # Playwright browser E2E flow
 |-- docs/assets/            # README and documentation assets
-`-- .github/workflows/      # CI, E2E, and deploy workflows
+`-- .github/workflows/      # CI and deploy workflows
 ```
 
 ### Backend
 
-- Node.js
+- Node.js `24.14.0`
 - Express 5
 - Prisma 7
 - PostgreSQL
-- Zod validation
+- Zod request validation
 - JWT authentication
-- Swagger UI / OpenAPI
+- Swagger UI and OpenAPI
 - Jest and Supertest
 
 ### Frontend
@@ -83,9 +95,10 @@ diffusion-node/
 - Tailwind CSS 4
 - Zustand
 - Axios
-- Lucide icons
-- D3 Geo, TopoJSON, and world-atlas for country exposure mapping
-- Playwright for browser E2E coverage
+- Lucide React
+- `country-flag-icons`
+- D3 Geo, TopoJSON, and `world-atlas`
+- Playwright
 
 ### Data Model
 
@@ -97,63 +110,103 @@ Diffusion Node models policy intelligence as a relational graph:
 - `Country`, `RestrictionType`, `Jurisdiction`
 - `User`, `ApiKey`
 
-V1 uses manually curated seed data in `prisma/seed.ts`. This is intentional: every seeded policy is traceable to real source material such as Federal Register notices, BIS updates, GAO decisions, or official agency pages.
+The current seed contains 15 policies, 17 technologies, 28 companies, 17 countries, 89 policy-company links, and 59 policy-technology links.
 
-## Getting Started
+## Data Curation
+
+V1 uses manually curated seed data in [prisma/seed.ts](./prisma/seed.ts). Each policy record is tied to public source material such as Federal Register notices, BIS rulemaking pages, GAO decisions, or official agency publications.
+
+When adding policy data:
+
+1. Read the official source material.
+2. Add the `Policy` record with title, summary, status, effective date, and control number.
+3. Link `PolicySource` and `Document` records to source URLs.
+4. Add `Jurisdiction` records for affected countries and restriction types.
+5. Add `PolicyTechnology` and `PolicyCompany` join rows.
+6. Add `PolicyRevision` and `TimelineEvent` records when the policy changed over time.
+7. Attach event-level source URLs when the event has a distinct citation.
+
+The seed command is idempotent because records use stable IDs and `upsert`.
+
+Credential seed data is disabled by default. Demo users and demo API keys are created only when the seed command is run with `SEED_DEMO_CREDENTIALS=true`.
+
+## Local Development
 
 ### Prerequisites
 
-- Node.js `24.14.0` recommended via `.nvmrc`
+- Node.js `24.14.0`
 - npm
 - PostgreSQL
 - Git
 
-The root `package.json` supports Node `>=20.9.0`, but the repository is currently pinned to Node `24.14.0` for local consistency.
+The root `package.json` allows Node `>=20.9.0`, but `.nvmrc` pins local development to `24.14.0`.
 
 ### Install Dependencies
 
-If you use `nvm`, load the pinned local runtime first:
-
 ```bash
 nvm use
-```
-
-```bash
 npm ci
 ```
 
 ### Configure Environment
 
-Create a local `.env` file at the repository root. Do not commit it.
+Create a root `.env` file with generated local JWT secrets:
 
 ```bash
+JWT_SECRET_VALUE=$(openssl rand -base64 32)
+JWT_REFRESH_SECRET_VALUE=$(openssl rand -base64 32)
+
+cat > .env <<EOF
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/diffusion?schema=public"
 PORT=3001
 CORS_ORIGIN="http://127.0.0.1:3000"
-JWT_SECRET="replace-with-a-long-local-access-secret"
-JWT_REFRESH_SECRET="replace-with-a-long-local-refresh-secret"
+JWT_SECRET="$JWT_SECRET_VALUE"
+JWT_REFRESH_SECRET="$JWT_REFRESH_SECRET_VALUE"
 NEXT_PUBLIC_API_BASE_URL="http://127.0.0.1:3001/api/v1"
 RATE_LIMIT_MAX=100
 RATE_LIMIT_WINDOW_MS=900000
+EOF
 ```
 
-Next.js reads the root `.env` through `frontend/next.config.ts`, so `NEXT_PUBLIC_API_BASE_URL` belongs in the root environment file or in the deployment environment.
+Next.js reads the root environment file through [frontend/next.config.ts](./frontend/next.config.ts). Restart the Next.js dev server after changing `NEXT_PUBLIC_API_BASE_URL`.
 
 ### Prepare the Database
 
+Create a local PostgreSQL database named `diffusion`, then run:
+
 ```bash
+createdb diffusion
 npm run prisma:generate
 npx prisma migrate dev
 npx prisma db seed
 ```
 
-Open Prisma Studio when you want to inspect seeded data:
+The default seed creates policy and reference data. It does not create local demo accounts.
+
+To seed demo credentials for local development, run:
+
+```bash
+SEED_DEMO_CREDENTIALS=true npx prisma db seed
+```
+
+Local demo credentials created by that command:
+
+| Email | Password | Role |
+| --- | --- | --- |
+| `admin@diffusionnode.io` | `password123` | `ADMIN` |
+| `developer@diffusionnode.io` | `password123` | `DEVELOPER` |
+
+For normal local testing, register a new user from `/auth`.
+
+### Inspect the Database
 
 ```bash
 npx prisma studio
 ```
 
-### Run Locally
+Prisma Studio opens a browser UI for the database connected by `DATABASE_URL`.
+
+### Run the Application
 
 Start the API:
 
@@ -169,16 +222,18 @@ npm run frontend:dev -- --hostname 127.0.0.1 --port 3000
 
 Local URLs:
 
-- Frontend: `http://127.0.0.1:3000`
-- API health check: `http://127.0.0.1:3001/health`
-- Swagger UI: `http://127.0.0.1:3001/docs`
-- API base URL: `http://127.0.0.1:3001/api/v1`
+| Service | URL |
+| --- | --- |
+| Frontend | `http://127.0.0.1:3000` |
+| API health check | `http://127.0.0.1:3001/health` |
+| API documentation | `http://127.0.0.1:3001/docs` |
+| API base URL | `http://127.0.0.1:3001/api/v1` |
 
 ## API Reference
 
-Interactive API documentation is available at `/docs` when the backend is running.
+Interactive documentation is served by Swagger UI at `/docs`.
 
-Core API routes:
+Core routes:
 
 | Method | Route | Description |
 | --- | --- | --- |
@@ -187,7 +242,7 @@ Core API routes:
 | `POST` | `/api/v1/auth/token` | Issue access and refresh credentials |
 | `POST` | `/api/v1/auth/refresh` | Refresh access credentials |
 | `GET` | `/api/v1/me` | Fetch the authenticated user profile |
-| `POST` | `/api/v1/api-keys` | Generate a new API key for the authenticated user |
+| `POST` | `/api/v1/api-keys` | Create an API key for the authenticated user |
 | `POST` | `/api/v1/api-keys/:id/revoke` | Revoke an authenticated user's API key |
 | `GET` | `/api/v1/policies` | Search and paginate policy records |
 | `GET` | `/api/v1/policies/:id` | Fetch one policy with relations |
@@ -216,110 +271,156 @@ Core API routes:
 
 ## Testing
 
-Run lint for backend and frontend:
+Run lint and typecheck:
 
 ```bash
 npm run lint
+npm run build:all
 ```
 
-Run Jest tests:
+Run Jest:
 
 ```bash
 npm test -- --runInBand
 ```
 
-Run backend and frontend builds:
-
-```bash
-npm run build:all
-```
-
-Run the browser E2E auth flow:
+Run browser E2E:
 
 ```bash
 npx playwright install chromium
 npm run test:e2e
 ```
 
-CI workflows currently cover:
+CI workflows:
 
-- Lint and typecheck: `.github/workflows/ci-lint-typecheck.yml`
-- API/unit tests with PostgreSQL: `.github/workflows/ci-test.yml`
-- Browser E2E auth flow with PostgreSQL: `.github/workflows/ci-e2e.yml`
-- Build and deploy hooks: `.github/workflows/cd-deploy.yml`
+| Workflow | Trigger | Purpose |
+| --- | --- | --- |
+| `.github/workflows/ci-lint-typecheck.yml` | Pull request to `main` | Lint, backend build, frontend build |
+| `.github/workflows/ci-test.yml` | Pull request to `main` | Jest tests against PostgreSQL |
+| `.github/workflows/ci-e2e.yml` | Pull request to `main` | Playwright auth flow against PostgreSQL |
+| `.github/workflows/cd-deploy.yml` | Push to `main` | Build backend/frontend and trigger deploy hooks when secrets exist |
+
+## Deployment
+
+### Backend and Database
+
+Render is configured through [render.yaml](./render.yaml):
+
+| Resource | Name | Plan | Region |
+| --- | --- | --- | --- |
+| PostgreSQL | `diffusion-node-db` | `free` | `oregon` |
+| Web service | `diffusion-node-api` | `free` | `oregon` |
+
+The Render backend build command:
+
+```bash
+HUSKY=0 npm ci --include=dev && npm run prisma:generate && npx prisma migrate deploy && npm run build
+```
+
+The Render start command:
+
+```bash
+npm run start
+```
+
+Required Render environment values:
+
+| Variable | Production value |
+| --- | --- |
+| `NODE_ENV` | `production` |
+| `NODE_VERSION` | `24.14.0` |
+| `DATABASE_URL` | Render PostgreSQL connection string |
+| `JWT_SECRET` | Generated secret |
+| `JWT_REFRESH_SECRET` | Generated secret |
+| `CORS_ORIGIN` | `https://diffusion-node-frontend.vercel.app` |
+| `RATE_LIMIT_MAX` | `100` |
+| `RATE_LIMIT_WINDOW_MS` | `900000` |
+
+Render migrations run during deployment. Production seed data is applied manually after migrations from a terminal session where `DATABASE_URL` is set to the Render PostgreSQL external connection string:
+
+```bash
+npx prisma db seed
+```
+
+The external database URL must include SSL mode, usually `sslmode=require`.
+
+### Frontend
+
+Vercel is configured through [vercel.json](./vercel.json):
+
+| Setting | Value |
+| --- | --- |
+| Framework | `nextjs` |
+| Install command | `npm ci --include=dev --ignore-scripts` |
+| Build command | `npm run frontend:build` |
+| Development command | `npm run frontend:dev` |
+| Output directory | `frontend/.next` |
+
+Required Vercel environment value:
+
+| Variable | Production value |
+| --- | --- |
+| `NEXT_PUBLIC_API_BASE_URL` | `https://diffusion-node-api.onrender.com/api/v1` |
+
+`NEXT_PUBLIC_API_BASE_URL` is read at build time. Redeploy the Vercel project after changing it.
 
 ## Troubleshooting
 
-### Missing Frontend API URL
+### Frontend Reports Missing API Base URL
 
-If the frontend shows `NEXT_PUBLIC_API_BASE_URL is required`, confirm the variable exists in the root `.env` file and restart the Next.js dev server. Next.js only loads public environment variables at server startup.
+Confirm `NEXT_PUBLIC_API_BASE_URL` exists in the root `.env` file for local development or in Vercel project settings for production. Restart or redeploy the frontend after changing this value.
 
-### Port Already In Use
+### Dashboard Loads Empty Data
 
-If Next.js reports that another dev server is already running, use the existing URL it prints or stop the listed process:
+Confirm the backend can return production records:
+
+```bash
+curl 'https://diffusion-node-api.onrender.com/api/v1/policies?limit=1'
+curl 'https://diffusion-node-api.onrender.com/api/v1/companies?limit=1'
+curl 'https://diffusion-node-api.onrender.com/api/v1/countries?limit=1'
+```
+
+If the API returns empty arrays, run the production seed command against Render PostgreSQL.
+
+### Next.js Dev Server Already Running
+
+Next.js prints the active process ID when another dev server is running. Stop that process before starting a new server:
 
 ```bash
 kill <pid>
 ```
 
-### Database Not Populated
+## Security
 
-If pages load but policy counts are empty, run migrations and seed data again:
-
-```bash
-npx prisma migrate dev
-npx prisma db seed
-```
-
-Then refresh the frontend after confirming the API is running on `PORT`.
-
-## Data Curation
-
-The seed data is curated by hand in `prisma/seed.ts`. When adding real policy data:
-
-1. Read the official source material.
-2. Add the `Policy` record.
-3. Link official `PolicySource` and `Document` records.
-4. Add affected `Technology`, `Company`, `Country`, and `RestrictionType` joins.
-5. Add `PolicyRevision` and `TimelineEvent` records when the rule changed over time.
-6. Include source URLs for timeline events when available.
-
-V1 intentionally does not scrape or ingest policy feeds automatically. Automated ingestion belongs in a later roadmap phase.
-
-## Logo
-
-The README logo is committed as `docs/assets/diffusion-node-logo.svg` so the project renders cleanly on GitHub without external design tooling.
+- Keep `.env` files out of Git.
+- Store production database URLs, JWT secrets, deploy hooks, and API credentials in Render, Vercel, or GitHub Actions secrets.
+- Rotate credentials immediately if a production connection string is exposed.
+- Do not seed demo users or demo API keys in production.
 
 ## Contributing
 
-Diffusion Node uses small, focused branches and conventional commits.
+Diffusion Node uses small, focused branches and signed conventional commits.
 
 Recommended workflow:
 
 ```bash
 git switch main
 git pull --ff-only origin main
-git switch -c feat/your-feature-name
+git switch -c feat/policy-search
 npm run lint
 npm test -- --runInBand
 npm run frontend:build
-git commit -S -m "feat(scope): describe the change"
+git commit -S -m "feat(api): add policy search filter"
 ```
 
-Contribution guidelines:
+Contribution rules:
 
-- Keep PRs focused and reviewable.
-- Do not stack unrelated PRs.
+- Keep each pull request focused on one reviewable change.
+- Do not stack pull requests with duplicate commits.
 - Do not commit `.env`, local database dumps, Playwright reports, coverage output, or build artifacts.
 - Add or update tests for behavior changes.
-- Keep seed data traceable to real sources.
-- Prefer existing project patterns over new abstractions.
-
-## Security
-
-- Keep JWT secrets, database URLs, deploy hooks, and API credentials in local or deployment environment variables.
-- Do not commit production secrets.
-- Rotate credentials if they are accidentally exposed.
+- Keep seed data traceable to public source URLs.
+- Use existing project patterns before introducing new abstractions.
 
 ## License
 
