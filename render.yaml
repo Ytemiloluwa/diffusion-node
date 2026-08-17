@@ -13,8 +13,7 @@ services:
     plan: free
     region: oregon
     branch: main
-    buildCommand: npm ci && npm run prisma:generate && npm run build
-    preDeployCommand: npx prisma migrate deploy
+    buildCommand: npm ci && npm run prisma:generate && npx prisma migrate deploy && npm run build
     startCommand: npm run start
     healthCheckPath: /health
     autoDeployTrigger: commit
