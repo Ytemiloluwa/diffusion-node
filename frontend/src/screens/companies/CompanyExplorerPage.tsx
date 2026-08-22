@@ -30,6 +30,17 @@ import {
   type PageInfo,
   type Policy,
 } from '@/lib/api';
+import {
+  formatCount,
+  formatDate,
+  getDisplayName,
+  getInitials,
+  getPolicyDate,
+  metricToneClasses,
+  toErrorMessage,
+  toFilterOptions,
+  type MetricTone,
+} from '@/screens/shared';
 import { useAuthStore, useUiStore, type CompanyFilters } from '@/store';
 
 const COMPANY_PAGE_SIZE = 20;
@@ -43,8 +54,6 @@ type CompanyStats = {
   policyCount: number;
   technologies: Set<string>;
 };
-
-type MetricTone = 'amber' | 'emerald' | 'sky' | 'slate';
 
 type Metric = {
   detail: string;
@@ -70,79 +79,12 @@ const emptyOptions: CompanyOptionState = {
   countries: [],
 };
 
-const metricToneClasses: Record<MetricTone, string> = {
-  amber: 'bg-warning-soft text-warning ring-warning-line',
-  emerald: 'bg-success-soft text-success ring-success-line',
-  sky: 'bg-info-soft text-info ring-info-line',
-  slate: 'bg-surface-muted text-ink-soft ring-line',
-};
-
-const formatCount = (value: number): string => value.toLocaleString('en-US');
-
-const formatDate = (value?: string | null): string => {
-  if (!value) {
-    return 'Not set';
-  }
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return new Intl.DateTimeFormat('en-US', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  }).format(date);
-};
-
-const getDisplayName = (email?: string): string => {
-  if (!email) {
-    return 'Analyst';
-  }
-
-  const localPart = email.split('@')[0] ?? email;
-  const words = localPart
-    .split(/[._-]+/)
-    .filter(Boolean)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1));
-
-  return words.length ? words.join(' ') : email;
-};
-
-const getInitials = (email?: string): string => {
-  if (!email) {
-    return 'DN';
-  }
-
-  const words = email.split('@')[0]?.split(/[._-]+/).filter(Boolean) ?? [];
-  const initials = words.map((word) => word.charAt(0).toUpperCase()).join('');
-
-  return (initials || email.slice(0, 2).toUpperCase()).slice(0, 2);
-};
-
-const toErrorMessage = (error: unknown): string => {
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  return 'Company records could not be loaded.';
-};
-
-const toFilterOptions = (values: string[]): Array<{ label: string; value: string }> =>
-  [...new Set(values.filter(Boolean))]
-    .sort((left, right) => left.localeCompare(right))
-    .map((value) => ({ label: value, value }));
-
 const emptyCompanyStats = (): CompanyStats => ({
   countries: new Map<string, string>(),
   latestPolicyDate: null,
   policyCount: 0,
   technologies: new Set<string>(),
 });
-
-const getPolicyDate = (policy: Policy): string | null => policy.effectiveDate ?? policy.updatedAt ?? null;
 
 const buildCompanyStats = (policies: Policy[]): Map<string, CompanyStats> => {
   const statsByCompanyId = new Map<string, CompanyStats>();
@@ -616,7 +558,7 @@ export function CompanyExplorerPage() {
       setPolicyStats(buildCompanyStats(policyContext.policies));
       setIsPolicyContextPartial(policyContext.isPartial);
     } catch (loadError) {
-      setError(toErrorMessage(loadError));
+      setError(toErrorMessage(loadError, 'Company records could not be loaded.'));
     } finally {
       setIsLoading(false);
     }

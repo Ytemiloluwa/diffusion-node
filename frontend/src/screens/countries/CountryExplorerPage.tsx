@@ -34,6 +34,18 @@ import {
   type Policy,
   type RestrictionType,
 } from '@/lib/api';
+import {
+  formatCount,
+  formatDate,
+  getDisplayName,
+  getInitials,
+  getPolicyDate,
+  getRestrictionCount,
+  metricToneClasses,
+  toErrorMessage,
+  toFilterOptions,
+  type MetricTone,
+} from '@/screens/shared';
 import { useAuthStore, useUiStore } from '@/store';
 
 const COUNTRY_PAGE_SIZE = 20;
@@ -57,8 +69,6 @@ type CountryExposure = CountryWithRestrictionSummary & {
   technologyCount: number;
   technologyNames: string[];
 };
-
-type MetricTone = 'amber' | 'emerald' | 'sky' | 'slate';
 
 type Metric = {
   detail: string;
@@ -88,81 +98,11 @@ const mapModeOptions: Array<{ label: string; value: MapExposureMode }> = [
   { label: 'Tier', value: 'tier' },
 ];
 
-const metricToneClasses: Record<MetricTone, string> = {
-  amber: 'bg-warning-soft text-warning ring-warning-line',
-  emerald: 'bg-success-soft text-success ring-success-line',
-  sky: 'bg-info-soft text-info ring-info-line',
-  slate: 'bg-surface-muted text-ink-soft ring-line',
-};
-
 const tierToneClasses: Record<string, BadgeProps['tone']> = {
   'Group A:5': 'sky',
   'Group A:6': 'amber',
   'Group D:5': 'red',
 };
-
-const formatCount = (value: number): string => value.toLocaleString('en-US');
-
-const formatDate = (value?: string | null): string => {
-  if (!value) {
-    return 'Not set';
-  }
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return new Intl.DateTimeFormat('en-US', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  }).format(date);
-};
-
-const getDisplayName = (email?: string): string => {
-  if (!email) {
-    return 'Analyst';
-  }
-
-  const localPart = email.split('@')[0] ?? email;
-  const words = localPart
-    .split(/[._-]+/)
-    .filter(Boolean)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1));
-
-  return words.length ? words.join(' ') : email;
-};
-
-const getInitials = (email?: string): string => {
-  if (!email) {
-    return 'DN';
-  }
-
-  const words = email.split('@')[0]?.split(/[._-]+/).filter(Boolean) ?? [];
-  const initials = words.map((word) => word.charAt(0).toUpperCase()).join('');
-
-  return (initials || email.slice(0, 2).toUpperCase()).slice(0, 2);
-};
-
-const toErrorMessage = (error: unknown): string => {
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  return 'Country records could not be loaded.';
-};
-
-const toFilterOptions = (values: string[]): Array<{ label: string; value: string }> =>
-  [...new Set(values.filter(Boolean))]
-    .sort((left, right) => left.localeCompare(right))
-    .map((value) => ({ label: value, value }));
-
-const getRestrictionCount = (country: CountryWithRestrictionSummary): number =>
-  Object.values(country.restrictionSummary).reduce((total, count) => total + count, 0);
-
-const getPolicyDate = (policy: Policy): string | null => policy.effectiveDate ?? policy.updatedAt ?? null;
 
 const createCountryExposure = (country: CountryWithRestrictionSummary): CountryExposure => ({
   ...country,
@@ -680,7 +620,7 @@ export function CountryExplorerPage() {
       setPageInfo(countryPage.pageInfo);
       setIsPolicyContextPartial(policyContext.isPartial);
     } catch (loadError) {
-      setError(toErrorMessage(loadError));
+      setError(toErrorMessage(loadError, 'Country records could not be loaded.'));
     } finally {
       setIsLoading(false);
     }

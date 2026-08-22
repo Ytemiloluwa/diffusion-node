@@ -16,7 +16,7 @@ import {
   RefreshCw,
   ShieldAlert,
 } from 'lucide-react';
-import { Badge, Button, CountryFlag, Panel, Spinner, type BadgeProps } from '@/components/atoms';
+import { Badge, Button, CountryFlag, Panel, Spinner } from '@/components/atoms';
 import { TimelineFeed, type TimelineFeedItem } from '@/components/organisms';
 import { DashboardShell } from '@/components/templates';
 import {
@@ -31,79 +31,19 @@ import {
   type PolicyTechnology,
   type PolicyTimelineItem,
 } from '@/lib/api';
+import {
+  formatCount,
+  formatDate,
+  getDisplayName,
+  getInitials,
+  policyStatusLabels as statusLabels,
+  policyStatusTones as statusTones,
+  toErrorMessage,
+} from '@/screens/shared';
 import { useAuthStore } from '@/store';
 
 export type PolicyDetailPageProps = {
   policyId: string;
-};
-
-const statusLabels: Record<PolicyStatus, string> = {
-  ACTIVE: 'Active',
-  CONTESTED: 'Contested',
-  DRAFT: 'Draft',
-  RESCINDED: 'Rescinded',
-  SUPERSEDED: 'Superseded',
-};
-
-const statusTones: Record<PolicyStatus, BadgeProps['tone']> = {
-  ACTIVE: 'emerald',
-  CONTESTED: 'amber',
-  DRAFT: 'slate',
-  RESCINDED: 'red',
-  SUPERSEDED: 'sky',
-};
-
-const formatDate = (value?: string | null): string => {
-  if (!value) {
-    return 'Not set';
-  }
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return new Intl.DateTimeFormat('en-US', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  }).format(date);
-};
-
-const formatCount = (value: number): string => value.toLocaleString('en-US');
-
-const getDisplayName = (email?: string): string => {
-  if (!email) {
-    return 'Analyst';
-  }
-
-  const localPart = email.split('@')[0] ?? email;
-  const words = localPart
-    .split(/[._-]+/)
-    .filter(Boolean)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1));
-
-  return words.length ? words.join(' ') : email;
-};
-
-const getInitials = (email?: string): string => {
-  if (!email) {
-    return 'DN';
-  }
-
-  const words = email.split('@')[0]?.split(/[._-]+/).filter(Boolean) ?? [];
-  const initials = words.map((word) => word.charAt(0).toUpperCase()).join('');
-
-  return (initials || email.slice(0, 2).toUpperCase()).slice(0, 2);
-};
-
-const toErrorMessage = (error: unknown): string => {
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  return 'Policy detail could not be loaded.';
 };
 
 const uniqueJurisdictions = (jurisdictions: Jurisdiction[]): Jurisdiction[] => {
@@ -314,7 +254,7 @@ export function PolicyDetailPage({ policyId }: PolicyDetailPageProps) {
       setPolicy(policyDetail);
       setTimeline(timelineItems);
     } catch (loadError) {
-      setError(toErrorMessage(loadError));
+      setError(toErrorMessage(loadError, 'Policy detail could not be loaded.'));
       setPolicy(null);
       setTimeline([]);
     } finally {

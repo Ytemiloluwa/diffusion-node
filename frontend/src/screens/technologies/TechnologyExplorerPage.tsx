@@ -29,6 +29,21 @@ import {
   type Technology,
   type TechnologyCategory,
 } from '@/lib/api';
+import {
+  createPolicyStatusCounts,
+  formatCount,
+  formatDate,
+  getDisplayName,
+  getInitials,
+  getPolicyDate,
+  metricToneClasses,
+  policyStatusLabels as statusLabels,
+  policyStatusTones as statusTones,
+  policyStatusValues,
+  toErrorMessage,
+  toFilterOptions,
+  type MetricTone,
+} from '@/screens/shared';
 import { useAuthStore, useUiStore, type TechnologyFilters } from '@/store';
 
 const TECHNOLOGY_PAGE_SIZE = 20;
@@ -49,8 +64,6 @@ type TechnologyStats = {
   statuses: Record<PolicyStatus, number>;
 };
 
-type MetricTone = 'amber' | 'emerald' | 'sky' | 'slate';
-
 type Metric = {
   detail: string;
   icon: LucideIcon;
@@ -65,105 +78,14 @@ const emptyPageInfo: PageInfo = {
   nextCursor: null,
 };
 
-const statusLabels: Record<PolicyStatus, string> = {
-  ACTIVE: 'Active',
-  CONTESTED: 'Contested',
-  DRAFT: 'Draft',
-  RESCINDED: 'Rescinded',
-  SUPERSEDED: 'Superseded',
-};
-
-const statusTones: Record<PolicyStatus, BadgeProps['tone']> = {
-  ACTIVE: 'emerald',
-  CONTESTED: 'amber',
-  DRAFT: 'slate',
-  RESCINDED: 'red',
-  SUPERSEDED: 'sky',
-};
-
-const metricToneClasses: Record<MetricTone, string> = {
-  amber: 'bg-warning-soft text-warning ring-warning-line',
-  emerald: 'bg-success-soft text-success ring-success-line',
-  sky: 'bg-info-soft text-info ring-info-line',
-  slate: 'bg-surface-muted text-ink-soft ring-line',
-};
-
-const formatCount = (value: number): string => value.toLocaleString('en-US');
-
-const formatDate = (value?: string | null): string => {
-  if (!value) {
-    return 'Not set';
-  }
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return new Intl.DateTimeFormat('en-US', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  }).format(date);
-};
-
-const getDisplayName = (email?: string): string => {
-  if (!email) {
-    return 'Analyst';
-  }
-
-  const localPart = email.split('@')[0] ?? email;
-  const words = localPart
-    .split(/[._-]+/)
-    .filter(Boolean)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1));
-
-  return words.length ? words.join(' ') : email;
-};
-
-const getInitials = (email?: string): string => {
-  if (!email) {
-    return 'DN';
-  }
-
-  const words = email.split('@')[0]?.split(/[._-]+/).filter(Boolean) ?? [];
-  const initials = words.map((word) => word.charAt(0).toUpperCase()).join('');
-
-  return (initials || email.slice(0, 2).toUpperCase()).slice(0, 2);
-};
-
-const toErrorMessage = (error: unknown): string => {
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  return 'Technology records could not be loaded.';
-};
-
-const toFilterOptions = (values: string[]): Array<{ label: string; value: string }> =>
-  [...new Set(values.filter(Boolean))]
-    .sort((left, right) => left.localeCompare(right))
-    .map((value) => ({ label: value, value }));
-
-const createStatusCounts = (): Record<PolicyStatus, number> => ({
-  ACTIVE: 0,
-  CONTESTED: 0,
-  DRAFT: 0,
-  RESCINDED: 0,
-  SUPERSEDED: 0,
-});
-
 const emptyTechnologyStats = (): TechnologyStats => ({
   activePolicyCount: 0,
   companies: new Map<string, string>(),
   countries: new Map<string, CountrySummary>(),
   latestPolicyDate: null,
   policyCount: 0,
-  statuses: createStatusCounts(),
+  statuses: createPolicyStatusCounts(),
 });
-
-const getPolicyDate = (policy: Policy): string | null => policy.effectiveDate ?? policy.updatedAt ?? null;
 
 const buildTechnologyStats = (policies: Policy[]): Map<string, TechnologyStats> => {
   const statsByTechnologyId = new Map<string, TechnologyStats>();
@@ -470,12 +392,12 @@ export function TechnologyExplorerPage() {
           return counts;
         }
 
-        (Object.keys(statusLabels) as PolicyStatus[]).forEach((status) => {
+        policyStatusValues.forEach((status) => {
           counts[status] += stats.statuses[status];
         });
 
         return counts;
-      }, createStatusCounts()),
+      }, createPolicyStatusCounts()),
     [filteredTechnologies, policyStats],
   );
 
@@ -659,7 +581,7 @@ export function TechnologyExplorerPage() {
       setPolicyStats(buildTechnologyStats(policyContext.policies));
       setIsPolicyContextPartial(policyContext.isPartial);
     } catch (loadError) {
-      setError(toErrorMessage(loadError));
+      setError(toErrorMessage(loadError, 'Technology records could not be loaded.'));
     } finally {
       setIsLoading(false);
     }
@@ -986,7 +908,7 @@ export function TechnologyExplorerPage() {
 
           <Panel description="Policy status mix across the current technology view." title="Policy Status">
             <div className="space-y-3">
-              {(Object.keys(statusLabels) as PolicyStatus[]).map((status) => (
+              {policyStatusValues.map((status) => (
                 <div className="flex items-center justify-between gap-3" key={status}>
                   <Badge tone={statusTones[status]}>{statusLabels[status]}</Badge>
                   <span className="text-sm font-semibold text-ink">{formatCount(statusCounts[status])}</span>

@@ -13,7 +13,7 @@ import {
   ShieldAlert,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { Badge, Button, CountryFlag, Panel, Spinner, type BadgeProps } from '@/components/atoms';
+import { Badge, Button, CountryFlag, Panel, Spinner } from '@/components/atoms';
 import { PolicyCard } from '@/components/molecules';
 import { DataTable, TimelineFeed, type DataTableColumn, type TimelineFeedItem } from '@/components/organisms';
 import { DashboardShell } from '@/components/templates';
@@ -24,13 +24,31 @@ import {
   listTechnologies,
   listTimeline,
   type Company,
-  type Country,
   type CountryWithRestrictionSummary,
   type Policy,
   type PolicyStatus,
   type Technology,
   type TimelineEventWithPolicy,
 } from '@/lib/api';
+import {
+  createPolicyStatusCounts,
+  formatCount,
+  formatDate,
+  getDisplayName,
+  getInitials,
+  getPolicyCompanyNames,
+  getPolicyCountries,
+  getPolicyCountryNames,
+  getPolicySourceName,
+  getPolicyTechnologyNames,
+  getRestrictionCount,
+  metricToneClasses,
+  policyStatusLabels as statusLabels,
+  policyStatusTones as statusTones,
+  policyStatusValues,
+  toErrorMessage,
+  type MetricTone,
+} from '@/screens/shared';
 import { useAuthStore } from '@/store';
 
 const DASHBOARD_PAGE_LIMIT = 100;
@@ -48,8 +66,6 @@ type DashboardData = {
   technologies: Technology[];
   timeline: TimelineEventWithPolicy[];
 };
-
-type MetricTone = 'amber' | 'emerald' | 'sky' | 'slate';
 
 type Metric = {
   detail: string;
@@ -69,102 +85,6 @@ const emptyDashboardData: DashboardData = {
   policies: [],
   technologies: [],
   timeline: [],
-};
-
-const statusLabels: Record<PolicyStatus, string> = {
-  ACTIVE: 'Active',
-  CONTESTED: 'Contested',
-  DRAFT: 'Draft',
-  RESCINDED: 'Rescinded',
-  SUPERSEDED: 'Superseded',
-};
-
-const statusTones: Record<PolicyStatus, BadgeProps['tone']> = {
-  ACTIVE: 'emerald',
-  CONTESTED: 'amber',
-  DRAFT: 'slate',
-  RESCINDED: 'red',
-  SUPERSEDED: 'sky',
-};
-
-const metricToneClasses: Record<MetricTone, string> = {
-  amber: 'bg-warning-soft text-warning ring-warning-line',
-  emerald: 'bg-success-soft text-success ring-success-line',
-  sky: 'bg-info-soft text-info ring-info-line',
-  slate: 'bg-surface-muted text-ink-soft ring-line',
-};
-
-const formatDate = (value?: string | null): string => {
-  if (!value) {
-    return 'Not set';
-  }
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return new Intl.DateTimeFormat('en-US', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  }).format(date);
-};
-
-const formatCount = (value: number): string => value.toLocaleString('en-US');
-
-const getPolicySourceName = (policy: Policy): string =>
-  policy.sources[0]?.sourceName ?? policy.documents[0]?.documentType ?? 'Source pending';
-
-const getPolicyTechnologyNames = (policy: Policy): string[] =>
-  policy.technologies.map(({ technology }) => technology.name);
-
-const getPolicyCompanyNames = (policy: Policy): string[] =>
-  policy.companies.map(({ company }) => company.name);
-
-const getPolicyCountryNames = (policy: Policy): string[] => [
-  ...new Set(policy.jurisdictions.map(({ country }) => country.name)),
-];
-
-const getPolicyCountries = (policy: Policy): Country[] => [
-  ...new Map(policy.jurisdictions.map(({ country }) => [country.id, country])).values(),
-];
-
-const getRestrictionCount = (country: CountryWithRestrictionSummary): number =>
-  Object.values(country.restrictionSummary).reduce((total, count) => total + count, 0);
-
-const toErrorMessage = (error: unknown): string => {
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  return 'Dashboard data could not be loaded.';
-};
-
-const getDisplayName = (email?: string): string => {
-  if (!email) {
-    return 'Analyst';
-  }
-
-  const localPart = email.split('@')[0] ?? email;
-  const words = localPart
-    .split(/[._-]+/)
-    .filter(Boolean)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1));
-
-  return words.length ? words.join(' ') : email;
-};
-
-const getInitials = (email?: string): string => {
-  if (!email) {
-    return 'DN';
-  }
-
-  const words = email.split('@')[0]?.split(/[._-]+/).filter(Boolean) ?? [];
-  const initials = words.map((word) => word.charAt(0).toUpperCase()).join('');
-
-  return (initials || email.slice(0, 2).toUpperCase()).slice(0, 2);
 };
 
 const policyColumns: DataTableColumn<Policy>[] = [
@@ -309,7 +229,7 @@ export function DashboardPage() {
         timeline: timelinePage.data,
       });
     } catch (loadError) {
-      setError(toErrorMessage(loadError));
+      setError(toErrorMessage(loadError, 'Dashboard data could not be loaded.'));
     } finally {
       setIsLoading(false);
     }
@@ -354,13 +274,7 @@ export function DashboardPage() {
           ...counts,
           [policy.status]: counts[policy.status] + 1,
         }),
-        {
-          ACTIVE: 0,
-          CONTESTED: 0,
-          DRAFT: 0,
-          RESCINDED: 0,
-          SUPERSEDED: 0,
-        },
+        createPolicyStatusCounts(),
       ),
     [data.policies],
   );
@@ -611,7 +525,7 @@ export function DashboardPage() {
 
           <Panel description="Current status distribution from loaded policy records." title="Policy Status">
             <div className="space-y-3">
-              {(Object.keys(statusLabels) as PolicyStatus[]).map((status) => (
+              {policyStatusValues.map((status) => (
                 <div className="flex items-center justify-between gap-3" key={status}>
                   <Badge tone={statusTones[status]}>{statusLabels[status]}</Badge>
                   <span className="text-sm font-semibold text-ink">
