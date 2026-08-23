@@ -17,6 +17,15 @@ services:
     startCommand: npm run start
     healthCheckPath: /health
     autoDeployTrigger: commit
+    buildFilter:
+      paths:
+        - src/**
+        - prisma/**
+        - package.json
+        - package-lock.json
+        - tsconfig.json
+        - prisma.config.ts
+        - render.yaml
     envVars:
       - key: NODE_ENV
         value: production
