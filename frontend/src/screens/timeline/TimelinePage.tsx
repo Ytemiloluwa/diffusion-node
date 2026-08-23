@@ -24,6 +24,19 @@ import { DashboardShell } from '@/components/templates';
 import { listTimeline } from '@/lib/api';
 import type { PageInfo, PolicyStatus, TimelineEventWithPolicy } from '@/lib/api';
 import { cn } from '@/lib/cn';
+import {
+  formatCount,
+  formatUtcDate as formatDate,
+  formatYear,
+  getDisplayName,
+  getInitials,
+  metricToneClasses,
+  policyStatusLabels as statusLabels,
+  policyStatusTones as statusTones,
+  toErrorMessage,
+  toFilterOptions,
+  type MetricTone,
+} from '@/screens/shared';
 import { useAuthStore } from '@/store';
 
 const TIMELINE_PAGE_SIZE = 20;
@@ -32,22 +45,6 @@ const emptyPageInfo: PageInfo = {
   hasNextPage: false,
   limit: TIMELINE_PAGE_SIZE,
   nextCursor: null,
-};
-
-const statusLabels: Record<PolicyStatus, string> = {
-  ACTIVE: 'Active',
-  CONTESTED: 'Contested',
-  DRAFT: 'Draft',
-  RESCINDED: 'Rescinded',
-  SUPERSEDED: 'Superseded',
-};
-
-const statusTones: Record<PolicyStatus, BadgeProps['tone']> = {
-  ACTIVE: 'emerald',
-  CONTESTED: 'amber',
-  DRAFT: 'slate',
-  RESCINDED: 'red',
-  SUPERSEDED: 'sky',
 };
 
 const eventTypeTones: Record<string, BadgeProps['tone']> = {
@@ -63,15 +60,6 @@ const eventTypeTones: Record<string, BadgeProps['tone']> = {
   rescission: 'red',
 };
 
-const metricToneClasses = {
-  amber: 'bg-warning-soft text-warning ring-warning-line',
-  emerald: 'bg-success-soft text-success ring-success-line',
-  sky: 'bg-info-soft text-info ring-info-line',
-  slate: 'bg-surface-muted text-ink-soft ring-line',
-};
-
-type MetricTone = keyof typeof metricToneClasses;
-
 type Metric = {
   detail: string;
   icon: LucideIcon;
@@ -86,28 +74,11 @@ type TimelineFilters = {
   status: string;
 };
 
-type FilterOption = {
-  label: string;
-  value: string;
-};
-
 const initialFilters: TimelineFilters = {
   eventType: '',
   sourceName: '',
   status: '',
 };
-
-const formatCount = (value: number) => new Intl.NumberFormat('en-US').format(value);
-
-const formatDate = (value: string) =>
-  new Intl.DateTimeFormat('en-US', {
-    day: 'numeric',
-    month: 'short',
-    timeZone: 'UTC',
-    year: 'numeric',
-  }).format(new Date(value));
-
-const formatYear = (value?: string) => (value ? String(new Date(value).getUTCFullYear()) : '-');
 
 const formatEventType = (value: string) =>
   value
@@ -119,34 +90,6 @@ const formatEventType = (value: string) =>
 const getEventTone = (eventType: string): BadgeProps['tone'] =>
   eventTypeTones[eventType.toLowerCase()] ?? 'slate';
 
-const getDisplayName = (email: string | null) => {
-  if (!email) {
-    return 'Analyst';
-  }
-
-  return email
-    .split('@')[0]
-    .split(/[._-]+/)
-    .filter(Boolean)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(' ');
-};
-
-const getInitials = (email: string | null) => {
-  const name = getDisplayName(email);
-  const initials = name
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join('');
-
-  return initials || 'DN';
-};
-
-const getErrorMessage = (error: unknown) =>
-  error instanceof Error ? error.message : 'An unexpected error occurred.';
-
 const getSourceLabel = (event: TimelineEventWithPolicy) =>
   event.sourceName?.trim() || event.sourceUrl?.replace(/^https?:\/\//, '') || 'Unattributed';
 
@@ -157,12 +100,6 @@ const getSourceHost = (value: string) => {
     return value.replace(/^https?:\/\//, '');
   }
 };
-
-const toFilterOptions = (values: string[]): FilterOption[] =>
-  Array.from(new Set(values.filter(Boolean))).sort((a, b) => a.localeCompare(b)).map((value) => ({
-    label: value,
-    value,
-  }));
 
 const getActiveFilterCount = (filters: TimelineFilters, searchQuery: string) =>
   [filters.eventType, filters.sourceName, filters.status, searchQuery.trim()].filter(Boolean).length;
@@ -387,7 +324,7 @@ export function TimelinePage() {
       setTimeline(page.data);
       setPageInfo(page.pageInfo);
     } catch (requestError) {
-      setError(getErrorMessage(requestError));
+      setError(toErrorMessage(requestError, 'An unexpected error occurred.'));
       setTimeline([]);
       setPageInfo(emptyPageInfo);
     } finally {

@@ -12,13 +12,12 @@ import {
   RefreshCw,
   ShieldAlert,
 } from 'lucide-react';
-import { Badge, Button, CountryFlag, Panel, Spinner, type BadgeProps } from '@/components/atoms';
+import { Badge, Button, CountryFlag, Panel, Spinner } from '@/components/atoms';
 import {
   FilterPanel,
   PaginationControls,
   PolicyCard,
   SearchBar,
-  type FilterOption,
   type PolicyFilters as FilterPanelPolicyFilters,
 } from '@/components/molecules';
 import { DataTable, type DataTableColumn } from '@/components/organisms';
@@ -31,7 +30,6 @@ import {
   listSources,
   listTechnologies,
   type Company,
-  type Country,
   type CountryWithRestrictionSummary,
   type PageInfo,
   type Policy,
@@ -40,6 +38,24 @@ import {
   type SourceSummary,
   type Technology,
 } from '@/lib/api';
+import {
+  createPolicyStatusCounts,
+  formatCount,
+  formatDate,
+  getDisplayName,
+  getInitials,
+  getPolicyCompanyNames,
+  getPolicyCountries,
+  getPolicyCountryNames,
+  getPolicySource,
+  getPolicySourceName,
+  getPolicyTechnologyNames,
+  policyStatusLabels as statusLabels,
+  policyStatusTones as statusTones,
+  policyStatusValues,
+  toErrorMessage,
+  toFilterOptions,
+} from '@/screens/shared';
 import { useAuthStore, useUiStore, type PolicyFilters as StorePolicyFilters } from '@/store';
 
 const PAGE_SIZE = 20;
@@ -58,22 +74,6 @@ const emptyPageInfo: PageInfo = {
   hasNextPage: false,
   limit: PAGE_SIZE,
   nextCursor: null,
-};
-
-const statusLabels: Record<PolicyStatus, string> = {
-  ACTIVE: 'Active',
-  CONTESTED: 'Contested',
-  DRAFT: 'Draft',
-  RESCINDED: 'Rescinded',
-  SUPERSEDED: 'Superseded',
-};
-
-const statusTones: Record<PolicyStatus, BadgeProps['tone']> = {
-  ACTIVE: 'emerald',
-  CONTESTED: 'amber',
-  DRAFT: 'slate',
-  RESCINDED: 'red',
-  SUPERSEDED: 'sky',
 };
 
 const activeFilterLabels = {
@@ -107,84 +107,6 @@ const emptyOptions: ExplorerOptions = {
 
 export type PolicyExplorerPageProps = {
   initialSearch?: string;
-};
-
-const formatDate = (value?: string | null): string => {
-  if (!value) {
-    return 'Not set';
-  }
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return new Intl.DateTimeFormat('en-US', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  }).format(date);
-};
-
-const formatCount = (value: number): string => value.toLocaleString('en-US');
-
-const toFilterOptions = (values: string[]): FilterOption[] =>
-  [...new Set(values.filter(Boolean))]
-    .sort((left, right) => left.localeCompare(right))
-    .map((value) => ({ label: value, value }));
-
-const getPolicySource = (policy: Policy) =>
-  policy.sources.find((source) => source.sourceUrl) ?? policy.sources[0];
-
-const getPolicySourceName = (policy: Policy): string =>
-  getPolicySource(policy)?.sourceName ?? policy.documents[0]?.documentType ?? 'Source pending';
-
-const getPolicyTechnologyNames = (policy: Policy): string[] =>
-  policy.technologies.map(({ technology }) => technology.name);
-
-const getPolicyCompanyNames = (policy: Policy): string[] =>
-  policy.companies.map(({ company }) => company.name);
-
-const getPolicyCountryNames = (policy: Policy): string[] => [
-  ...new Set(policy.jurisdictions.map(({ country }) => country.name)),
-];
-
-const getPolicyCountries = (policy: Policy): Country[] => [
-  ...new Map(policy.jurisdictions.map(({ country }) => [country.id, country])).values(),
-];
-
-const getDisplayName = (email?: string): string => {
-  if (!email) {
-    return 'Analyst';
-  }
-
-  const localPart = email.split('@')[0] ?? email;
-  const words = localPart
-    .split(/[._-]+/)
-    .filter(Boolean)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1));
-
-  return words.length ? words.join(' ') : email;
-};
-
-const getInitials = (email?: string): string => {
-  if (!email) {
-    return 'DN';
-  }
-
-  const words = email.split('@')[0]?.split(/[._-]+/).filter(Boolean) ?? [];
-  const initials = words.map((word) => word.charAt(0).toUpperCase()).join('');
-
-  return (initials || email.slice(0, 2).toUpperCase()).slice(0, 2);
-};
-
-const toErrorMessage = (error: unknown): string => {
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  return 'Policy records could not be loaded.';
 };
 
 const toPanelFilters = (filters: StorePolicyFilters): FilterPanelPolicyFilters => ({
@@ -411,7 +333,7 @@ export function PolicyExplorerPage({ initialSearch }: PolicyExplorerPageProps) {
       setPageInfo(policyPage.pageInfo);
       setPolicies(policyPage.data);
     } catch (loadError) {
-      setError(toErrorMessage(loadError));
+      setError(toErrorMessage(loadError, 'Policy records could not be loaded.'));
     } finally {
       setIsLoading(false);
     }
@@ -483,13 +405,7 @@ export function PolicyExplorerPage({ initialSearch }: PolicyExplorerPageProps) {
           ...counts,
           [policy.status]: counts[policy.status] + 1,
         }),
-        {
-          ACTIVE: 0,
-          CONTESTED: 0,
-          DRAFT: 0,
-          RESCINDED: 0,
-          SUPERSEDED: 0,
-        },
+        createPolicyStatusCounts(),
       ),
     [policies],
   );
@@ -734,7 +650,7 @@ export function PolicyExplorerPage({ initialSearch }: PolicyExplorerPageProps) {
 
           <Panel description="Status distribution from the current result page." title="Status Breakdown">
             <div className="space-y-3">
-              {(Object.keys(statusLabels) as PolicyStatus[]).map((status) => (
+              {policyStatusValues.map((status) => (
                 <div className="flex items-center justify-between gap-3" key={status}>
                   <Badge tone={statusTones[status]}>{statusLabels[status]}</Badge>
                   <span className="text-sm font-semibold text-ink">

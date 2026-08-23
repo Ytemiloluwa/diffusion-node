@@ -17,62 +17,14 @@ import { Badge, Button, IconButton, Input, Panel, Spinner } from '@/components/a
 import { ApiKeyRow } from '@/components/molecules';
 import { DashboardShell } from '@/components/templates';
 import { API_BASE_URL_ENV_VAR, getApiBaseUrl, type ApiKeySummary, type UserProfile } from '@/lib/api';
+import {
+  formatCount,
+  formatDateTime as formatDate,
+  getDisplayName,
+  getInitials,
+  toErrorMessage,
+} from '@/screens/shared';
 import { useAuthStore } from '@/store';
-
-const formatDate = (value?: string | null): string => {
-  if (!value) {
-    return 'Not set';
-  }
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return new Intl.DateTimeFormat('en-US', {
-    day: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  }).format(date);
-};
-
-const formatCount = (value: number): string => value.toLocaleString('en-US');
-
-const getDisplayName = (email?: string): string => {
-  if (!email) {
-    return 'Analyst';
-  }
-
-  const localPart = email.split('@')[0] ?? email;
-  const words = localPart
-    .split(/[._-]+/)
-    .filter(Boolean)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1));
-
-  return words.length ? words.join(' ') : email;
-};
-
-const getInitials = (email?: string): string => {
-  if (!email) {
-    return 'DN';
-  }
-
-  const words = email.split('@')[0]?.split(/[._-]+/).filter(Boolean) ?? [];
-  const initials = words.map((word) => word.charAt(0).toUpperCase()).join('');
-
-  return (initials || email.slice(0, 2).toUpperCase()).slice(0, 2);
-};
-
-const toErrorMessage = (error: unknown): string => {
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  return 'Settings data could not be loaded.';
-};
 
 const getApiDocsUrl = (apiBaseUrl: string): string => {
   const baseWithoutVersion = apiBaseUrl.replace(/\/api\/v1\/?$/, '');
@@ -161,7 +113,7 @@ export function DeveloperSettingsPage() {
 
       setProfile(loadedProfile);
     } catch (loadError) {
-      setError(toErrorMessage(loadError));
+      setError(toErrorMessage(loadError, 'Settings data could not be loaded.'));
     } finally {
       setIsLoading(false);
     }
@@ -242,7 +194,7 @@ export function DeveloperSettingsPage() {
           void refreshProfile();
         }, 0);
       } catch (createError) {
-        setError(toErrorMessage(createError));
+        setError(toErrorMessage(createError, 'Settings data could not be loaded.'));
       } finally {
         setIsCreatingApiKey(false);
       }
@@ -266,7 +218,7 @@ export function DeveloperSettingsPage() {
             : currentProfile,
         );
       } catch (revokeError) {
-        setError(toErrorMessage(revokeError));
+        setError(toErrorMessage(revokeError, 'Settings data could not be loaded.'));
       } finally {
         setRevokingApiKeyId(null);
       }
