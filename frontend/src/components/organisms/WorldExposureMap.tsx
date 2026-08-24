@@ -7,6 +7,10 @@ import { useMemo, useState } from 'react';
 import type { Feature, FeatureCollection, Geometry } from 'geojson';
 import type { GeometryCollection, Topology } from 'topojson-specification';
 import { cn } from '@/lib/cn';
+import {
+  normalizeCountryName,
+  resolveAlpha2CountryCode,
+} from '@/lib/countryCodes';
 
 export type MapExposureMode = 'policies' | 'restrictions' | 'tier';
 
@@ -53,34 +57,43 @@ const countryFeatures = atlasFeatures.features as AtlasFeature[];
 const projection = geoNaturalEarth1().fitSize([MAP_WIDTH, MAP_HEIGHT], atlasFeatures);
 const pathGenerator = geoPath(projection);
 
-const atlasIdsByCountryCode: Record<string, string> = {
+const atlasCountryIds = new Set(countryFeatures.map((countryFeature) => String(countryFeature.id ?? '')));
+
+const atlasIdsByCountryName = new Map<string, string>();
+
+countryFeatures.forEach((countryFeature) => {
+  const atlasId = String(countryFeature.id ?? '');
+  const normalizedName = normalizeCountryName(countryFeature.properties.name);
+
+  if (atlasId && normalizedName && !atlasIdsByCountryName.has(normalizedName)) {
+    atlasIdsByCountryName.set(normalizedName, atlasId);
+  }
+});
+
+const atlasNameAliases: Record<string, string> = {
+  macau: 'macao',
+  'macao sar china': 'macao',
+  'united states': 'united states of america',
+};
+
+const atlasIdsByAlpha2CountryCode: Record<string, string> = {
   AE: '784',
-  ARE: '784',
+  CA: '124',
   CN: '156',
-  CHN: '156',
+  DE: '276',
   GB: '826',
-  GBR: '826',
   IN: '356',
-  IND: '356',
   IR: '364',
-  IRN: '364',
   JP: '392',
-  JPN: '392',
+  KG: '417',
   KR: '410',
-  KOR: '410',
   MO: '446',
-  MAC: '446',
   NL: '528',
-  NLD: '528',
+  RU: '643',
   SG: '702',
-  SGP: '702',
   TR: '792',
-  TUR: '792',
   TW: '158',
-  TWN: '158',
-  UK: '826',
   US: '840',
-  USA: '840',
 };
 
 const exposureFillClasses = {
@@ -97,10 +110,24 @@ const tierFillClasses = {
   medium: 'fill-warning-line',
 };
 
-const getAtlasId = (countryCode: string): string | null => {
+const getAtlasId = (countryCode: string, countryName: string): string | null => {
   const normalizedCode = countryCode.trim().toUpperCase();
 
-  return atlasIdsByCountryCode[normalizedCode] ?? null;
+  if (/^\d{3}$/.test(normalizedCode) && atlasCountryIds.has(normalizedCode)) {
+    return normalizedCode;
+  }
+
+  const normalizedName = normalizeCountryName(countryName);
+  const atlasName = normalizedName ? (atlasNameAliases[normalizedName] ?? normalizedName) : null;
+  const atlasIdByName = atlasName ? atlasIdsByCountryName.get(atlasName) : null;
+
+  if (atlasIdByName) {
+    return atlasIdByName;
+  }
+
+  const alpha2CountryCode = resolveAlpha2CountryCode(countryCode, countryName);
+
+  return alpha2CountryCode ? (atlasIdsByAlpha2CountryCode[alpha2CountryCode] ?? null) : null;
 };
 
 const getExposureClass = (value: number): string => {
@@ -185,7 +212,7 @@ export function WorldExposureMap({
     const exposureMap = new Map<string, MapCountryDatum>();
 
     countries.forEach((country) => {
-      const atlasId = getAtlasId(country.isoCode);
+      const atlasId = getAtlasId(country.isoCode, country.name);
 
       if (atlasId) {
         exposureMap.set(atlasId, country);
