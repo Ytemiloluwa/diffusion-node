@@ -248,46 +248,124 @@ const users = [
 ] as const;
 
 const technologyCategories = [
-  { key: 'cat-semi', name: 'Semiconductors', isActiveInV1: true },
-  { key: 'cat-ai', name: 'Artificial Intelligence', isActiveInV1: true },
-  { key: 'cat-quantum', name: 'Quantum Computing', isActiveInV1: false },
-  { key: 'cat-cloud', name: 'Cloud Computing', isActiveInV1: false },
-  { key: 'cat-sw', name: 'Software and EDA', isActiveInV1: false },
-  { key: 'cat-advanced-mfg', name: 'Advanced Manufacturing', isActiveInV1: false },
+  {
+    aliases: ['advanced computing', 'AI', 'machine learning', 'model weights', 'supercomputer'],
+    isActiveInV1: true,
+    key: 'cat-ai',
+    name: 'Artificial Intelligence and Advanced Computing',
+  },
+  {
+    aliases: ['chips', 'integrated circuits', 'microelectronics', 'semiconductor devices'],
+    isActiveInV1: true,
+    key: 'cat-semi',
+    name: 'Semiconductors and Microelectronics',
+  },
+  {
+    aliases: ['cloud services', 'data centers', 'IaaS', 'infrastructure as a service'],
+    isActiveInV1: true,
+    key: 'cat-cloud',
+    name: 'Cloud Computing and Data Infrastructure',
+  },
+  {
+    aliases: ['cryptography', 'post-quantum cryptography', 'quantum computing', 'quantum information'],
+    isActiveInV1: true,
+    key: 'cat-quantum',
+    name: 'Quantum Information and Cryptography',
+  },
+  {
+    aliases: ['ECAD', 'EDA', 'software', 'technical data', 'technology transfer'],
+    isActiveInV1: true,
+    key: 'cat-sw',
+    name: 'Software, EDA, and Technical Data',
+  },
+  {
+    aliases: ['autonomous systems', 'industrial robotics', 'robotics', '3D printing'],
+    isActiveInV1: true,
+    key: 'cat-advanced-mfg',
+    name: 'Robotics and Additive Manufacturing',
+  },
+  {
+    aliases: ['biomedical engineering', 'genetic elements', 'nucleic acid synthesis', 'pathogens'],
+    isActiveInV1: true,
+    key: 'cat-biotech',
+    name: 'Biotechnology and Biomedical Engineering',
+  },
+  {
+    aliases: ['atomic energy', 'enrichment', 'nuclear materials', 'reactor equipment'],
+    isActiveInV1: true,
+    key: 'cat-nuclear',
+    name: 'Nuclear Technology',
+  },
+  {
+    aliases: ['aerospace', 'avionics', 'navigation', 'spacecraft', 'space systems'],
+    isActiveInV1: true,
+    key: 'cat-aerospace',
+    name: 'Aerospace, Space, and Avionics',
+  },
+  {
+    aliases: ['infrared sensors', 'lasers', 'radar', 'remote sensing', 'thermal imaging'],
+    isActiveInV1: true,
+    key: 'cat-sensors',
+    name: 'Sensors, Lasers, and Radar',
+  },
+  {
+    aliases: ['chemical precursors', 'composites', 'energetic materials', 'fluorinated compounds'],
+    isActiveInV1: true,
+    key: 'cat-materials',
+    name: 'Materials and Chemicals',
+  },
+  {
+    aliases: ['cybersecurity', 'information security', 'secure communications', 'telecommunications'],
+    isActiveInV1: true,
+    key: 'cat-telecom-cyber',
+    name: 'Telecommunications and Cybersecurity',
+  },
+  {
+    aliases: ['defense articles', 'military electronics', 'munitions', 'tactical systems', 'USML'],
+    isActiveInV1: true,
+    key: 'cat-defense',
+    name: 'Defense and Munitions',
+  },
 ] as const;
 
 const technologies = [
   {
+    aliases: ['advanced logic', 'finfet', 'logic integrated circuits', 'sub-16nm'],
     key: 'tech-01',
     name: 'Advanced Logic Nodes (<16nm / 3D Tri-Gate)',
     description: 'Sub-16/14nm non-planar logic architectures.',
     categoryKey: 'cat-semi',
   },
   {
+    aliases: ['high bandwidth memory', 'HBM', 'HBM2E', 'HBM3', 'HBM3E', 'stacked DRAM'],
     key: 'tech-02',
     name: 'High-Bandwidth Memory (HBM2E/HBM3/HBM3E)',
     description: 'Stacked DRAM dies linked through silicon interposers for AI processing.',
     categoryKey: 'cat-semi',
   },
   {
+    aliases: ['EUV', 'EUV lithography', '13.5nm lithography'],
     key: 'tech-03',
     name: 'Extreme Ultraviolet (EUV) Lithography',
     description: '13.5nm wavelength photolithography tools.',
     categoryKey: 'cat-semi',
   },
   {
+    aliases: ['DUV', 'DUV immersion', '193nm immersion', 'NXT lithography'],
     key: 'tech-04',
     name: 'Deep Ultraviolet (DUV) Immersion Lithography',
     description: '193nm immersion photolithography systems, including ASML NXT-series tools.',
     categoryKey: 'cat-semi',
   },
   {
+    aliases: ['GAAFET', 'gate all around', 'nanosheet transistor'],
     key: 'tech-05',
     name: 'Gate-All-Around (GAAFET) Transistors',
     description: 'Nanosheet transistor structures used in sub-3nm nodes.',
     categoryKey: 'cat-semi',
   },
   {
+    aliases: ['3A090', 'AI accelerator', 'advanced computing accelerator', 'GPU', 'TPP'],
     key: 'tech-06',
     name: 'AI Training Accelerators (ECCN 3A090)',
     description:
@@ -295,18 +373,21 @@ const technologies = [
     categoryKey: 'cat-ai',
   },
   {
+    aliases: ['exascale interconnect', 'high-speed interconnect', 'optical interconnect'],
     key: 'tech-07',
     name: 'Supercomputer Interconnects',
     description: 'High-speed optical and copper interconnects for exascale clusters.',
     categoryKey: 'cat-ai',
   },
   {
+    aliases: ['EDA', 'ECAD', 'electronic computer-aided design', 'chip design software'],
     key: 'tech-08',
     name: 'Electronic Design Automation (EDA) Software',
     description: 'ECAD software for GAAFET and advanced chiplet design.',
     categoryKey: 'cat-sw',
   },
   {
+    aliases: ['4E091', 'AI model weights', 'closed-weight model', 'foundation model weights'],
     key: 'tech-09',
     name: 'AI Model Weights (Closed-Weight, >10^26 FLOP, ECCN 4E091)',
     description:
@@ -314,12 +395,14 @@ const technologies = [
     categoryKey: 'cat-ai',
   },
   {
+    aliases: ['diamond substrate', 'gallium oxide', 'ultra wide bandgap', 'UWBG'],
     key: 'tech-10',
     name: 'Ultra-Wide Bandgap Semiconductor Substrates',
     description: 'Gallium oxide and diamond substrates used for advanced power semiconductors.',
     categoryKey: 'cat-semi',
   },
   {
+    aliases: ['3D006', 'GAAFET design software', 'GAAFET ECAD'],
     key: 'tech-11',
     name: 'GAAFET ECAD Software (ECCN 3D006)',
     description:
@@ -327,6 +410,7 @@ const technologies = [
     categoryKey: 'cat-sw',
   },
   {
+    aliases: ['deposition equipment', 'dry etch', 'etch equipment', 'wafer processing'],
     key: 'tech-12',
     name: 'Semiconductor Manufacturing Equipment (Dry Etch and Deposition)',
     description:
@@ -334,6 +418,7 @@ const technologies = [
     categoryKey: 'cat-semi',
   },
   {
+    aliases: ['EUV mask', 'EUV reticle', 'lithography mask', 'reticle'],
     key: 'tech-13',
     name: 'EUV Masks and Reticles',
     description:
@@ -341,6 +426,7 @@ const technologies = [
     categoryKey: 'cat-semi',
   },
   {
+    aliases: ['cryo CMOS', 'cryogenic amplifier', 'quantum amplifier'],
     key: 'tech-14',
     name: 'Cryogenic CMOS and Quantum-Limited Amplifiers',
     description:
@@ -348,6 +434,7 @@ const technologies = [
     categoryKey: 'cat-quantum',
   },
   {
+    aliases: ['cryogenic cooling', 'cryogenic test', 'cryogenic wafer probing'],
     key: 'tech-15',
     name: 'Cryogenic Wafer Probing and Cooling Systems',
     description:
@@ -355,17 +442,163 @@ const technologies = [
     categoryKey: 'cat-quantum',
   },
   {
+    aliases: ['qubit', 'qubit assemblies', 'quantum computer', 'quantum processor'],
     key: 'tech-16',
     name: 'Quantum Computers and Qubit Assemblies',
     description: 'Quantum processing systems, qubit devices, and supporting assemblies.',
     categoryKey: 'cat-quantum',
   },
   {
+    aliases: ['3D printing', 'additive manufacturing', 'metal powder bed fusion'],
     key: 'tech-17',
     name: 'Metal Additive Manufacturing Equipment',
     description:
       'Additive manufacturing equipment and process controls used for advanced industrial production.',
     categoryKey: 'cat-advanced-mfg',
+  },
+  {
+    aliases: ['IaaS', 'cloud compute', 'cloud infrastructure', 'data center compute'],
+    key: 'tech-18',
+    name: 'AI Data Center Cloud Compute Services',
+    description:
+      'Cloud infrastructure and compute services capable of supporting advanced AI training or inference workloads.',
+    categoryKey: 'cat-cloud',
+  },
+  {
+    aliases: ['AI cluster', 'training cluster', 'supercomputing cluster'],
+    key: 'tech-19',
+    name: 'Advanced AI Model Training Clusters',
+    description:
+      'Networked accelerator clusters used to train large-scale AI models above controlled compute thresholds.',
+    categoryKey: 'cat-ai',
+  },
+  {
+    aliases: ['encryption software', 'information security software', 'secure communications software'],
+    key: 'tech-20',
+    name: 'Encryption and Information Security Software',
+    description:
+      'Software implementing advanced cryptographic or information-security functionality.',
+    categoryKey: 'cat-telecom-cyber',
+  },
+  {
+    aliases: ['post-quantum encryption', 'PQC', 'quantum-resistant cryptography'],
+    key: 'tech-21',
+    name: 'Post-Quantum Cryptography',
+    description:
+      'Cryptographic methods and software designed to resist attacks by quantum computers.',
+    categoryKey: 'cat-quantum',
+  },
+  {
+    aliases: ['pathogens', 'toxins', 'genetic elements', 'select agents'],
+    key: 'tech-22',
+    name: 'Pathogens, Toxins, and Genetic Elements',
+    description:
+      'Biological materials and genetic elements subject to dual-use export-control scrutiny.',
+    categoryKey: 'cat-biotech',
+  },
+  {
+    aliases: ['DNA synthesis software', 'gene synthesis software', 'nucleic acid assembly software'],
+    key: 'tech-23',
+    name: 'Nucleic Acid Synthesis Software',
+    description:
+      'Software used to design, screen, or synthesize controlled nucleic acid sequences.',
+    categoryKey: 'cat-biotech',
+  },
+  {
+    aliases: ['atomic reactor', 'nuclear reactor', 'reactor components'],
+    key: 'tech-24',
+    name: 'Nuclear Reactor Equipment and Components',
+    description:
+      'Dual-use reactor equipment, components, and technical know-how for nuclear systems.',
+    categoryKey: 'cat-nuclear',
+  },
+  {
+    aliases: ['enrichment', 'isotope separation', 'uranium enrichment'],
+    key: 'tech-25',
+    name: 'Isotope Separation and Enrichment Technology',
+    description:
+      'Technology, equipment, and controls used in isotope separation or nuclear enrichment.',
+    categoryKey: 'cat-nuclear',
+  },
+  {
+    aliases: ['satellite systems', 'spacecraft', 'spacecraft components', 'space systems'],
+    key: 'tech-26',
+    name: 'Spacecraft Systems and Components',
+    description:
+      'Spacecraft, satellites, and related components used in civil, commercial, or dual-use missions.',
+    categoryKey: 'cat-aerospace',
+  },
+  {
+    aliases: ['avionics', 'flight control', 'inertial navigation', 'navigation systems'],
+    key: 'tech-27',
+    name: 'Inertial Navigation and Avionics Systems',
+    description:
+      'Navigation, flight-control, and avionics systems used in aerospace or defense applications.',
+    categoryKey: 'cat-aerospace',
+  },
+  {
+    aliases: ['autonomous machinery', 'autonomous robot', 'industrial robot', 'robotic systems'],
+    key: 'tech-28',
+    name: 'Autonomous Robotic Systems',
+    description:
+      'Robotic systems, autonomy software, and production equipment for controlled industrial or defense uses.',
+    categoryKey: 'cat-advanced-mfg',
+  },
+  {
+    aliases: ['infrared camera', 'thermal camera', 'thermal imaging'],
+    key: 'tech-29',
+    name: 'Thermal Imaging and Infrared Sensors',
+    description:
+      'Infrared sensors and thermal imaging systems used in surveillance, industrial, or defense applications.',
+    categoryKey: 'cat-sensors',
+  },
+  {
+    aliases: ['radar', 'remote sensing', 'synthetic aperture radar'],
+    key: 'tech-30',
+    name: 'Radar and Remote Sensing Systems',
+    description:
+      'Radar, remote sensing, and related detection systems with controlled performance characteristics.',
+    categoryKey: 'cat-sensors',
+  },
+  {
+    aliases: ['advanced composites', 'carbon fiber', 'high-strength materials'],
+    key: 'tech-31',
+    name: 'High-Strength Composite Materials',
+    description:
+      'Composite materials and production technologies used in aerospace, defense, and critical infrastructure.',
+    categoryKey: 'cat-materials',
+  },
+  {
+    aliases: ['chemical precursors', 'energetic materials', 'propellants'],
+    key: 'tech-32',
+    name: 'Energetic Materials and Chemical Precursors',
+    description:
+      'Chemical precursors, propellants, and energetic materials controlled for dual-use or defense concerns.',
+    categoryKey: 'cat-materials',
+  },
+  {
+    aliases: ['5G network equipment', 'secure communications', 'telecom infrastructure'],
+    key: 'tech-33',
+    name: 'Telecommunications Network Equipment',
+    description:
+      'Telecommunications infrastructure and secure communications equipment with controlled capabilities.',
+    categoryKey: 'cat-telecom-cyber',
+  },
+  {
+    aliases: ['military electronics', 'radiation-hardened electronics', 'tactical electronics'],
+    key: 'tech-34',
+    name: 'Military Electronics and Radiation-Hardened Components',
+    description:
+      'Specialized electronics and components designed for military or harsh-environment applications.',
+    categoryKey: 'cat-defense',
+  },
+  {
+    aliases: ['drone systems', 'tactical UAS', 'unmanned aerial systems', 'UAS'],
+    key: 'tech-35',
+    name: 'Unmanned Aerial Systems and Tactical Equipment',
+    description:
+      'Unmanned aerial systems, tactical equipment, and related controlled defense technologies.',
+    categoryKey: 'cat-defense',
   },
 ] as const;
 
@@ -1353,11 +1586,13 @@ async function main() {
     await prisma.technologyCategory.upsert({
       where: { id: seedId(category.key) },
       update: {
+        aliases: [...category.aliases],
         isActiveInV1: category.isActiveInV1,
         name: category.name,
       },
       create: {
         id: seedId(category.key),
+        aliases: [...category.aliases],
         isActiveInV1: category.isActiveInV1,
         name: category.name,
       },
@@ -1400,12 +1635,14 @@ async function main() {
     await prisma.technology.upsert({
       where: { id: seedId(technology.key) },
       update: {
+        aliases: [...technology.aliases],
         categoryId: seedId(technology.categoryKey),
         description: technology.description,
         name: technology.name,
       },
       create: {
         id: seedId(technology.key),
+        aliases: [...technology.aliases],
         categoryId: seedId(technology.categoryKey),
         description: technology.description,
         name: technology.name,

@@ -452,13 +452,17 @@ export const openApiSpec = swaggerJsdoc({
         Technology: {
           additionalProperties: false,
           properties: {
+            aliases: {
+              items: { type: 'string' },
+              type: 'array',
+            },
             category: { $ref: '#/components/schemas/TechnologyCategory' },
             categoryId: { format: 'uuid', type: 'string' },
             description: { nullable: true, type: 'string' },
             id: { format: 'uuid', type: 'string' },
             name: { example: 'AI accelerators', type: 'string' },
           },
-          required: ['category', 'categoryId', 'description', 'id', 'name'],
+          required: ['aliases', 'category', 'categoryId', 'description', 'id', 'name'],
           type: 'object',
         },
         TechnologyCategory: {
@@ -472,11 +476,15 @@ export const openApiSpec = swaggerJsdoc({
               required: ['technologies'],
               type: 'object',
             },
+            aliases: {
+              items: { type: 'string' },
+              type: 'array',
+            },
             id: { format: 'uuid', type: 'string' },
             isActiveInV1: { type: 'boolean' },
             name: { example: 'Artificial Intelligence', type: 'string' },
           },
-          required: ['_count', 'id', 'isActiveInV1', 'name'],
+          required: ['_count', 'aliases', 'id', 'isActiveInV1', 'name'],
           type: 'object',
         },
         TimelineEvent: {

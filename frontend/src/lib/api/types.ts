@@ -102,12 +102,14 @@ export type TechnologyCategory = {
   _count?: {
     technologies: number;
   };
+  aliases: string[];
   id: string;
   isActiveInV1: boolean;
   name: string;
 };
 
 export type Technology = {
+  aliases: string[];
   category: TechnologyCategory;
   categoryId: string;
   description: string | null;
