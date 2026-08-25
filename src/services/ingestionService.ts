@@ -50,6 +50,16 @@ export type FederalRegisterIngestionResult = {
   sourceId: string;
 };
 
+type TaxonomyMatcher = {
+  aliases: string[];
+  name: string;
+};
+
+type IngestionTaxonomy = {
+  categories: TaxonomyMatcher[];
+  technologies: TaxonomyMatcher[];
+};
+
 const defaultFederalRegisterDryRunSource = {
   baseUrl: FEDERAL_REGISTER_DOCUMENTS_URL,
   id: DEFAULT_DRY_RUN_SOURCE_ID,
@@ -87,6 +97,67 @@ const getMatchedTerms = (document: FederalRegisterDocument, terms: string[]): st
     .toLowerCase();
 
   return terms.filter((term) => searchText.includes(term.toLowerCase()));
+};
+
+const escapeRegExp = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const textIncludesTaxonomyTerm = (searchText: string, term: string): boolean => {
+  const normalizedTerm = term.trim().toLowerCase();
+
+  if (!normalizedTerm) {
+    return false;
+  }
+
+  if (/^[a-z0-9]+$/.test(normalizedTerm) && normalizedTerm.length <= 4) {
+    return new RegExp(`\\b${escapeRegExp(normalizedTerm)}\\b`).test(searchText);
+  }
+
+  return searchText.includes(normalizedTerm);
+};
+
+const getDocumentTaxonomySearchText = (document: FederalRegisterDocument): string =>
+  [document.title, document.abstract, document.type, document.document_number, ...normalizeAgencyNames(document)]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+
+const getMatchedTaxonomyNames = (searchText: string, matchers: TaxonomyMatcher[]): string[] =>
+  matchers
+    .filter(({ aliases, name }) =>
+      [name, ...aliases].some((term) => textIncludesTaxonomyTerm(searchText, term)),
+    )
+    .map(({ name }) => name)
+    .sort((left, right) => left.localeCompare(right));
+
+const getDocumentTaxonomyMatches = (
+  document: FederalRegisterDocument,
+  taxonomy: IngestionTaxonomy,
+): Pick<Prisma.IngestionDocumentCreateInput, 'matchedCategoryNames' | 'matchedTechnologyNames'> => {
+  const searchText = getDocumentTaxonomySearchText(document);
+
+  return {
+    matchedCategoryNames: getMatchedTaxonomyNames(searchText, taxonomy.categories),
+    matchedTechnologyNames: getMatchedTaxonomyNames(searchText, taxonomy.technologies),
+  };
+};
+
+const loadActiveTechnologyTaxonomy = async (): Promise<IngestionTaxonomy> => {
+  const [categories, technologies] = await Promise.all([
+    prisma.technologyCategory.findMany({
+      select: { aliases: true, name: true },
+      where: { isActiveInV1: true },
+    }),
+    prisma.technology.findMany({
+      select: { aliases: true, name: true },
+      where: {
+        category: {
+          isActiveInV1: true,
+        },
+      },
+    }),
+  ]);
+
+  return { categories, technologies };
 };
 
 export const ensureFederalRegisterIngestionSource = async () =>
@@ -158,8 +229,9 @@ export const runFederalRegisterIngestion = async ({
       },
       fetchImpl,
     );
-
     if (!dryRun) {
+      const taxonomy = await loadActiveTechnologyTaxonomy();
+
       for (const document of documents) {
         const existingDocument = await prisma.ingestionDocument.findUnique({
           where: {
@@ -175,6 +247,7 @@ export const runFederalRegisterIngestion = async ({
           documentType: document.type ?? null,
           htmlUrl: document.html_url ?? null,
           matchedTerms: getMatchedTerms(document, searchTerms),
+          ...getDocumentTaxonomyMatches(document, taxonomy),
           pdfUrl: document.pdf_url ?? null,
           publicationDate: toPublicationDate(document.publication_date),
           rawPayload: document as unknown as Prisma.InputJsonValue,

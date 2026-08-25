@@ -34,6 +34,7 @@ model ApiKey {
 model TechnologyCategory {
   id           String       @id @default(uuid())
   name         String
+  aliases      String[]     @default([])
   isActiveInV1 Boolean      @default(false)
   technologies Technology[]
 }
@@ -41,6 +42,7 @@ model TechnologyCategory {
 model Technology {
   id          String             @id @default(uuid())
   name        String
+  aliases     String[]           @default([])
   description String?
   categoryId  String
   category    TechnologyCategory @relation(fields: [categoryId], references: [id])
@@ -205,38 +207,40 @@ model IngestionSource {
 }
 
 model IngestionRun {
-  id               String             @id @default(uuid())
+  id               String              @id @default(uuid())
   sourceId         String
-  source           IngestionSource    @relation(fields: [sourceId], references: [id], onDelete: Cascade)
-  status           IngestionRunStatus @default(RUNNING)
-  startedAt        DateTime           @default(now())
+  source           IngestionSource     @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  status           IngestionRunStatus  @default(RUNNING)
+  startedAt        DateTime            @default(now())
   finishedAt       DateTime?
-  documentsFound   Int                @default(0)
-  documentsCreated Int                @default(0)
-  documentsUpdated Int                @default(0)
+  documentsFound   Int                 @default(0)
+  documentsCreated Int                 @default(0)
+  documentsUpdated Int                 @default(0)
   errorMessage     String?
   documents        IngestionDocument[]
 }
 
 model IngestionDocument {
-  id              String                  @id @default(uuid())
-  sourceId        String
-  source          IngestionSource         @relation(fields: [sourceId], references: [id], onDelete: Cascade)
-  runId           String?
-  run             IngestionRun?           @relation(fields: [runId], references: [id], onDelete: SetNull)
-  externalId      String
-  title           String
-  abstract        String?
-  documentType    String?
-  htmlUrl         String?
-  pdfUrl          String?
-  publicationDate DateTime?
-  agencyNames     String[]
-  matchedTerms    String[]
-  rawPayload      Json
-  status          IngestionDocumentStatus @default(NEW)
-  createdAt       DateTime                @default(now())
-  updatedAt       DateTime                @updatedAt
+  id                     String                  @id @default(uuid())
+  sourceId               String
+  source                 IngestionSource         @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  runId                  String?
+  run                    IngestionRun?           @relation(fields: [runId], references: [id], onDelete: SetNull)
+  externalId             String
+  title                  String
+  abstract               String?
+  documentType           String?
+  htmlUrl                String?
+  pdfUrl                 String?
+  publicationDate        DateTime?
+  agencyNames            String[]
+  matchedTerms           String[]
+  matchedCategoryNames   String[]                @default([])
+  matchedTechnologyNames String[]                @default([])
+  rawPayload             Json
+  status                 IngestionDocumentStatus @default(NEW)
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
 
   @@unique([sourceId, externalId])
   @@index([publicationDate])

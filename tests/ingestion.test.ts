@@ -17,6 +17,12 @@ const mockPrisma = {
     update: jest.fn<AsyncMock<unknown>>(),
     upsert: jest.fn<AsyncMock<unknown>>(),
   },
+  technology: {
+    findMany: jest.fn<AsyncMock<unknown[]>>(),
+  },
+  technologyCategory: {
+    findMany: jest.fn<AsyncMock<unknown[]>>(),
+  },
 };
 
 jest.mock('../src/db/prisma', () => ({
@@ -59,6 +65,22 @@ describe('Federal Register ingestion', () => {
     jest.resetAllMocks();
     mockPrisma.ingestionSource.upsert.mockResolvedValue(ingestionSource);
     mockPrisma.ingestionRun.create.mockResolvedValue({ id: 'run-1' });
+    mockPrisma.technologyCategory.findMany.mockResolvedValue([
+      {
+        aliases: ['advanced computing'],
+        name: 'Artificial Intelligence and Advanced Computing',
+      },
+      {
+        aliases: ['semiconductors'],
+        name: 'Semiconductors and Microelectronics',
+      },
+    ]);
+    mockPrisma.technology.findMany.mockResolvedValue([
+      {
+        aliases: ['advanced computing semiconductors'],
+        name: 'AI Training Accelerators (ECCN 3A090)',
+      },
+    ]);
   });
 
   it('builds Federal Register document search URLs with policy query filters', () => {
@@ -132,7 +154,12 @@ describe('Federal Register ingestion', () => {
         data: expect.objectContaining({
           agencyNames: ['Commerce Department'],
           externalId: '2026-12345',
+          matchedCategoryNames: [
+            'Artificial Intelligence and Advanced Computing',
+            'Semiconductors and Microelectronics',
+          ],
           matchedTerms: ['advanced computing'],
+          matchedTechnologyNames: ['AI Training Accelerators (ECCN 3A090)'],
           sourceId: 'source-1',
           status: 'NEW',
           title: 'Export Controls on Advanced Computing Semiconductors',
