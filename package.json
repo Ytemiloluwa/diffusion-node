@@ -19,6 +19,7 @@
     "frontend:dev": "npm run dev -w frontend",
     "frontend:lint": "npm run lint -w frontend",
     "frontend:start": "npm run start -w frontend",
+    "ingest:federal-register": "ts-node src/scripts/ingestFederalRegister.ts",
     "lint": "npm run backend:lint && npm run frontend:lint",
     "prisma:generate": "prisma generate",
     "prisma:validate": "prisma validate",
