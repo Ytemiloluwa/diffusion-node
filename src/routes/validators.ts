@@ -1,4 +1,4 @@
-import { Role } from '@prisma/client';
+import { IngestionDocumentStatus, IngestionRunStatus, IngestionSourceType, Role } from '@prisma/client';
 import { z } from 'zod';
 
 const cursorPaginationQuery = {
@@ -55,4 +55,30 @@ export const companiesQuerySchema = z.object({
   ...cursorPaginationQuery,
   country: z.string().min(1).optional(),
   entityListStatus: z.string().min(1).optional(),
+});
+
+export const ingestionDocumentsQuerySchema = z.object({
+  ...cursorPaginationQuery,
+  q: z.string().trim().min(1).optional(),
+  runId: z.string().uuid().optional(),
+  sourceId: z.string().uuid().optional(),
+  status: z.enum(IngestionDocumentStatus).optional(),
+});
+
+export const ingestionRunsQuerySchema = z.object({
+  ...cursorPaginationQuery,
+  sourceId: z.string().uuid().optional(),
+  status: z.enum(IngestionRunStatus).optional(),
+});
+
+export const ingestionSourcesQuerySchema = z.object({
+  sourceType: z.enum(IngestionSourceType).optional(),
+});
+
+export const ingestionDocumentStatusBodySchema = z.object({
+  status: z.enum([
+    IngestionDocumentStatus.NEW,
+    IngestionDocumentStatus.REVIEWED,
+    IngestionDocumentStatus.SKIPPED,
+  ]),
 });

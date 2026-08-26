@@ -8,6 +8,7 @@ import { errorHandler } from './middleware/errorHandler';
 import { rateLimiter } from './middleware/rateLimiter';
 import { apiKeyRoutes } from './routes/apiKeyRoutes';
 import { authRoutes } from './routes/authRoutes';
+import { ingestionRoutes } from './routes/ingestionRoutes';
 import { policyRoutes } from './routes/policyRoutes';
 import { referenceDataRoutes } from './routes/referenceDataRoutes';
 import { timelineRoutes } from './routes/timelineRoutes';
@@ -27,6 +28,7 @@ export const createApp = () => {
   app.use('/api/v1', rateLimiter);
   app.use('/api/v1/auth', authRoutes);
   app.use('/api/v1', apiKeyRoutes);
+  app.use('/api/v1/ingestion', ingestionRoutes);
   app.use('/api/v1/policies', policyRoutes);
   app.use('/api/v1/timeline', timelineRoutes);
   app.use('/api/v1', referenceDataRoutes);
