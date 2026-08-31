@@ -12,7 +12,6 @@ test('registers a user, reaches the dashboard, and logs in again', async ({ page
   await page.getByLabel('Email').fill(email);
   await page.getByLabel('Password', { exact: true }).fill(password);
   await page.getByLabel('Confirm password').fill(password);
-  await page.getByLabel('API key label').fill('E2E registration session');
   await page.getByRole('button', { name: 'Create account' }).click();
 
   await expect(page).toHaveURL('/');
@@ -25,7 +24,6 @@ test('registers a user, reaches the dashboard, and logs in again', async ({ page
   await page.getByRole('tab', { name: 'Login' }).click();
   await page.getByLabel('Email').fill(email);
   await page.getByLabel('Password', { exact: true }).fill(password);
-  await page.getByLabel('API key label').fill('E2E login session');
   await page.getByRole('button', { name: 'Login' }).click();
 
   await expect(page).toHaveURL('/');

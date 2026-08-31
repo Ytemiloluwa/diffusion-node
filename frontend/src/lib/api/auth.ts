@@ -9,7 +9,6 @@ export type RegisterUserPayload = {
 
 export type IssueTokenPayload = {
   email: string;
-  label?: string;
   password: string;
 };
 

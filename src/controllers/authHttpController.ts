@@ -9,7 +9,7 @@ export const registerHandler: RequestHandler = asyncHandler(async (req, res) => 
 });
 
 export const tokenHandler: RequestHandler = asyncHandler(async (req, res) => {
-  const tokenResponse = await issueToken(req.body.email, req.body.password, req.body.label);
+  const tokenResponse = await issueToken(req.body.email, req.body.password);
   res.status(200).json({ data: tokenResponse });
 });
 

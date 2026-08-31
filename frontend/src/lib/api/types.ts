@@ -60,7 +60,6 @@ export type UserProfile = User & {
 
 export type AuthTokenResponse = {
   accessToken: string;
-  apiKey: ApiKeyCredential;
   refreshToken: string;
   user: User;
 };
