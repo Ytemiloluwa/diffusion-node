@@ -34,6 +34,11 @@ describe('OpenAPI spec', () => {
         '/countries',
         '/docs',
         '/health',
+        '/ingestion/documents',
+        '/ingestion/documents/{id}',
+        '/ingestion/documents/{id}/status',
+        '/ingestion/runs',
+        '/ingestion/sources',
         '/me',
         '/policies',
         '/policies/{id}',
@@ -76,12 +81,18 @@ describe('OpenAPI spec', () => {
     expect(spec.paths['/me'].get.security).toEqual([{ bearerAuth: [] }]);
     expect(spec.paths['/api-keys'].post.security).toEqual([{ bearerAuth: [] }]);
     expect(spec.paths['/api-keys/{id}/revoke'].post.security).toEqual([{ bearerAuth: [] }]);
+    expect(spec.paths['/ingestion/documents'].get.security).toEqual([{ bearerAuth: [] }]);
+    expect(spec.paths['/ingestion/documents/{id}/status'].patch.security).toEqual([
+      { bearerAuth: [] },
+    ]);
     expect(spec.paths['/auth/token'].post.security).toEqual([]);
     expect(spec.components.securitySchemes).toHaveProperty('bearerAuth');
     expect(spec.components.securitySchemes).toHaveProperty('apiKeyAuth');
     expect(spec.components.schemas).toHaveProperty('ApiKeyCreateRequest');
     expect(spec.components.schemas).toHaveProperty('ApiKeyCredential');
     expect(spec.components.schemas).toHaveProperty('ApiKeySummary');
+    expect(spec.components.schemas).toHaveProperty('IngestionDocument');
+    expect(spec.components.schemas).toHaveProperty('IngestionStatusUpdateRequest');
     expect(spec.components.schemas).toHaveProperty('Policy');
     expect(spec.components.schemas).toHaveProperty('PolicyStatus');
     expect(spec.components.schemas).toHaveProperty('ValidationErrorResponse');

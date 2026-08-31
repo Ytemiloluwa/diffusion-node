@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
-import { PolicyStatus, Role } from '@prisma/client';
+import { IngestionDocumentStatus, IngestionRunStatus, IngestionSourceType, PolicyStatus, Role } from '@prisma/client';
 import request from 'supertest';
 
 type AsyncMock<TResult> = (args?: unknown) => Promise<TResult>;
@@ -14,6 +14,17 @@ const mockPrisma = {
     findMany: jest.fn<AsyncMock<unknown[]>>(),
   },
   country: {
+    findMany: jest.fn<AsyncMock<unknown[]>>(),
+  },
+  ingestionDocument: {
+    findMany: jest.fn<AsyncMock<unknown[]>>(),
+    findUnique: jest.fn<AsyncMock<unknown | null>>(),
+    update: jest.fn<AsyncMock<unknown>>(),
+  },
+  ingestionRun: {
+    findMany: jest.fn<AsyncMock<unknown[]>>(),
+  },
+  ingestionSource: {
     findMany: jest.fn<AsyncMock<unknown[]>>(),
   },
   policy: {
@@ -384,6 +395,190 @@ describe('API app', () => {
       .get('/api/v1/me')
       .set('authorization', `Bearer ${accessToken}`)
       .expect(404);
+  });
+
+  it('rejects missing authentication for ingestion review routes', async () => {
+    await request(createApp()).get('/api/v1/ingestion/documents').expect(401);
+  });
+
+  it('lists ingestion sources for authenticated reviewers', async () => {
+    const accessToken = signAccessToken({
+      email: 'developer@example.com',
+      id: '00000000-0000-4000-8000-000000000012',
+      role: Role.DEVELOPER,
+    });
+    mockPrisma.ingestionSource.findMany.mockResolvedValue([
+      {
+        _count: { documents: 3, runs: 2 },
+        id: 'source-1',
+        name: 'Federal Register monitor',
+        sourceType: IngestionSourceType.FEDERAL_REGISTER_API,
+      },
+    ]);
+
+    const response = await request(createApp())
+      .get('/api/v1/ingestion/sources?sourceType=FEDERAL_REGISTER_API')
+      .set('authorization', `Bearer ${accessToken}`)
+      .expect(200);
+
+    expect(mockPrisma.ingestionSource.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { sourceType: IngestionSourceType.FEDERAL_REGISTER_API },
+      }),
+    );
+    expect(response.body.data).toMatchObject([{ name: 'Federal Register monitor' }]);
+  });
+
+  it('lists ingestion runs with pagination metadata', async () => {
+    const accessToken = signAccessToken({
+      email: 'developer@example.com',
+      id: '00000000-0000-4000-8000-000000000013',
+      role: Role.DEVELOPER,
+    });
+    mockPrisma.ingestionRun.findMany.mockResolvedValue([
+      {
+        documentsFound: 2,
+        id: 'run-1',
+        source: { id: 'source-1', name: 'Federal Register monitor' },
+        status: IngestionRunStatus.SUCCEEDED,
+      },
+      {
+        documentsFound: 1,
+        id: 'run-2',
+        source: { id: 'source-1', name: 'Federal Register monitor' },
+        status: IngestionRunStatus.FAILED,
+      },
+    ]);
+
+    const response = await request(createApp())
+      .get('/api/v1/ingestion/runs?status=SUCCEEDED&limit=1')
+      .set('authorization', `Bearer ${accessToken}`)
+      .expect(200);
+
+    expect(mockPrisma.ingestionRun.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        take: 2,
+        where: { status: IngestionRunStatus.SUCCEEDED },
+      }),
+    );
+    expect(response.body).toMatchObject({
+      data: [{ id: 'run-1', status: IngestionRunStatus.SUCCEEDED }],
+      pageInfo: {
+        hasNextPage: true,
+        limit: 1,
+        nextCursor: 'run-1',
+      },
+    });
+  });
+
+  it('lists ingestion document candidates with review filters', async () => {
+    const accessToken = signAccessToken({
+      email: 'developer@example.com',
+      id: '00000000-0000-4000-8000-000000000014',
+      role: Role.DEVELOPER,
+    });
+    const sourceId = '00000000-0000-4000-8000-000000000015';
+    mockPrisma.ingestionDocument.findMany.mockResolvedValue([
+      {
+        externalId: '2026-12345',
+        id: 'document-1',
+        matchedCategoryNames: ['Artificial Intelligence and Advanced Computing'],
+        matchedTechnologyNames: ['AI Training Accelerators (ECCN 3A090)'],
+        source: { id: sourceId, name: 'Federal Register monitor' },
+        status: IngestionDocumentStatus.NEW,
+        title: 'Export Controls on Advanced Computing Semiconductors',
+      },
+    ]);
+
+    const response = await request(createApp())
+      .get(`/api/v1/ingestion/documents?status=NEW&sourceId=${sourceId}&q=advanced&limit=10`)
+      .set('authorization', `Bearer ${accessToken}`)
+      .expect(200);
+
+    expect(mockPrisma.ingestionDocument.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        take: 11,
+        where: expect.objectContaining({
+          sourceId,
+          status: IngestionDocumentStatus.NEW,
+        }),
+      }),
+    );
+    expect(response.body.data).toMatchObject([
+      {
+        matchedCategoryNames: ['Artificial Intelligence and Advanced Computing'],
+        status: IngestionDocumentStatus.NEW,
+      },
+    ]);
+  });
+
+  it('fetches one ingestion document with its raw source payload', async () => {
+    const accessToken = signAccessToken({
+      email: 'developer@example.com',
+      id: '00000000-0000-4000-8000-000000000018',
+      role: Role.DEVELOPER,
+    });
+    const documentId = '00000000-0000-4000-8000-000000000019';
+    mockPrisma.ingestionDocument.findUnique.mockResolvedValue({
+      externalId: '2026-12345',
+      id: documentId,
+      rawPayload: { document_number: '2026-12345' },
+      source: { id: 'source-1', name: 'Federal Register monitor' },
+      status: IngestionDocumentStatus.REVIEWED,
+      title: 'Export Controls on Advanced Computing Semiconductors',
+    });
+
+    const response = await request(createApp())
+      .get(`/api/v1/ingestion/documents/${documentId}`)
+      .set('authorization', `Bearer ${accessToken}`)
+      .expect(200);
+
+    expect(mockPrisma.ingestionDocument.findUnique).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: documentId },
+      }),
+    );
+    expect(response.body.data).toMatchObject({
+      rawPayload: { document_number: '2026-12345' },
+      status: IngestionDocumentStatus.REVIEWED,
+    });
+  });
+
+  it('updates ingestion document review status without allowing imported status', async () => {
+    const accessToken = signAccessToken({
+      email: 'developer@example.com',
+      id: '00000000-0000-4000-8000-000000000016',
+      role: Role.DEVELOPER,
+    });
+    const documentId = '00000000-0000-4000-8000-000000000017';
+    mockPrisma.ingestionDocument.findUnique.mockResolvedValue({
+      id: documentId,
+      status: IngestionDocumentStatus.NEW,
+    });
+    mockPrisma.ingestionDocument.update.mockResolvedValue({
+      id: documentId,
+      status: IngestionDocumentStatus.SKIPPED,
+    });
+
+    const response = await request(createApp())
+      .patch(`/api/v1/ingestion/documents/${documentId}/status`)
+      .set('authorization', `Bearer ${accessToken}`)
+      .send({ status: IngestionDocumentStatus.SKIPPED })
+      .expect(200);
+
+    expect(mockPrisma.ingestionDocument.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: { status: IngestionDocumentStatus.SKIPPED },
+        where: { id: documentId },
+      }),
+    );
+    expect(response.body.data).toMatchObject({ status: IngestionDocumentStatus.SKIPPED });
+
+    await request(createApp())
+      .patch(`/api/v1/ingestion/documents/${documentId}/status`)
+      .set('authorization', `Bearer ${accessToken}`)
+      .send({ status: IngestionDocumentStatus.IMPORTED })
+      .expect(400);
   });
 
   it('creates a new API key for the authenticated user and returns the raw key once', async () => {

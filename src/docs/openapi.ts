@@ -83,6 +83,17 @@ const apiKeyIdPathParameter = {
   },
 };
 
+const ingestionDocumentIdPathParameter = {
+  description: 'Ingestion document UUID.',
+  in: 'path',
+  name: 'id',
+  required: true,
+  schema: {
+    format: 'uuid',
+    type: 'string',
+  },
+};
+
 const paginatedResponses = {
   400: validationErrorResponse,
   429: rateLimitResponse,
@@ -96,6 +107,7 @@ export const openApiSpec = swaggerJsdoc({
       parameters: {
         ApiKeyId: apiKeyIdPathParameter,
         Cursor: cursorParameter,
+        IngestionDocumentId: ingestionDocumentIdPathParameter,
         Limit: limitParameter,
         PolicyId: idPathParameter,
       },
@@ -259,6 +271,185 @@ export const openApiSpec = swaggerJsdoc({
           additionalProperties: false,
           properties: {
             status: { enum: ['ok'], type: 'string' },
+          },
+          required: ['status'],
+          type: 'object',
+        },
+        IngestionDocument: {
+          additionalProperties: false,
+          properties: {
+            abstract: { nullable: true, type: 'string' },
+            agencyNames: {
+              items: { type: 'string' },
+              type: 'array',
+            },
+            createdAt: { format: 'date-time', type: 'string' },
+            documentType: { nullable: true, type: 'string' },
+            externalId: { type: 'string' },
+            htmlUrl: { nullable: true, type: 'string' },
+            id: { format: 'uuid', type: 'string' },
+            matchedCategoryNames: {
+              items: { type: 'string' },
+              type: 'array',
+            },
+            matchedTechnologyNames: {
+              items: { type: 'string' },
+              type: 'array',
+            },
+            matchedTerms: {
+              items: { type: 'string' },
+              type: 'array',
+            },
+            pdfUrl: { nullable: true, type: 'string' },
+            publicationDate: { format: 'date-time', nullable: true, type: 'string' },
+            rawPayload: {
+              additionalProperties: true,
+              description: 'Original source payload. Returned on the detail endpoint.',
+              type: 'object',
+            },
+            run: {
+              nullable: true,
+              oneOf: [{ $ref: '#/components/schemas/IngestionRunSummary' }],
+            },
+            runId: { format: 'uuid', nullable: true, type: 'string' },
+            source: { $ref: '#/components/schemas/IngestionSourceSummary' },
+            sourceId: { format: 'uuid', type: 'string' },
+            status: { $ref: '#/components/schemas/IngestionDocumentStatus' },
+            title: { type: 'string' },
+            updatedAt: { format: 'date-time', type: 'string' },
+          },
+          required: [
+            'abstract',
+            'agencyNames',
+            'createdAt',
+            'documentType',
+            'externalId',
+            'htmlUrl',
+            'id',
+            'matchedCategoryNames',
+            'matchedTechnologyNames',
+            'matchedTerms',
+            'pdfUrl',
+            'publicationDate',
+            'rawPayload',
+            'run',
+            'runId',
+            'source',
+            'sourceId',
+            'status',
+            'title',
+            'updatedAt',
+          ],
+          type: 'object',
+        },
+        IngestionDocumentStatus: {
+          enum: ['NEW', 'REVIEWED', 'IMPORTED', 'SKIPPED'],
+          type: 'string',
+        },
+        IngestionRun: {
+          additionalProperties: false,
+          properties: {
+            documentsCreated: { type: 'integer' },
+            documentsFound: { type: 'integer' },
+            documentsUpdated: { type: 'integer' },
+            errorMessage: { nullable: true, type: 'string' },
+            finishedAt: { format: 'date-time', nullable: true, type: 'string' },
+            id: { format: 'uuid', type: 'string' },
+            source: { $ref: '#/components/schemas/IngestionSourceSummary' },
+            sourceId: { format: 'uuid', type: 'string' },
+            startedAt: { format: 'date-time', type: 'string' },
+            status: { $ref: '#/components/schemas/IngestionRunStatus' },
+          },
+          required: [
+            'documentsCreated',
+            'documentsFound',
+            'documentsUpdated',
+            'errorMessage',
+            'finishedAt',
+            'id',
+            'source',
+            'sourceId',
+            'startedAt',
+            'status',
+          ],
+          type: 'object',
+        },
+        IngestionRunStatus: {
+          enum: ['RUNNING', 'SUCCEEDED', 'FAILED'],
+          type: 'string',
+        },
+        IngestionRunSummary: {
+          additionalProperties: false,
+          properties: {
+            id: { format: 'uuid', type: 'string' },
+            startedAt: { format: 'date-time', type: 'string' },
+            status: { $ref: '#/components/schemas/IngestionRunStatus' },
+          },
+          required: ['id', 'startedAt', 'status'],
+          type: 'object',
+        },
+        IngestionSource: {
+          additionalProperties: false,
+          properties: {
+            _count: {
+              additionalProperties: false,
+              properties: {
+                documents: { type: 'integer' },
+                runs: { type: 'integer' },
+              },
+              required: ['documents', 'runs'],
+              type: 'object',
+            },
+            baseUrl: { format: 'uri', type: 'string' },
+            createdAt: { format: 'date-time', type: 'string' },
+            id: { format: 'uuid', type: 'string' },
+            isActive: { type: 'boolean' },
+            lastFetchedAt: { format: 'date-time', nullable: true, type: 'string' },
+            name: { type: 'string' },
+            query: {
+              additionalProperties: true,
+              type: 'object',
+            },
+            sourceType: { $ref: '#/components/schemas/IngestionSourceType' },
+            updatedAt: { format: 'date-time', type: 'string' },
+          },
+          required: [
+            '_count',
+            'baseUrl',
+            'createdAt',
+            'id',
+            'isActive',
+            'lastFetchedAt',
+            'name',
+            'query',
+            'sourceType',
+            'updatedAt',
+          ],
+          type: 'object',
+        },
+        IngestionSourceSummary: {
+          additionalProperties: false,
+          properties: {
+            id: { format: 'uuid', type: 'string' },
+            name: { type: 'string' },
+            sourceType: { $ref: '#/components/schemas/IngestionSourceType' },
+          },
+          required: ['id', 'name', 'sourceType'],
+          type: 'object',
+        },
+        IngestionSourceType: {
+          enum: ['FEDERAL_REGISTER_API'],
+          type: 'string',
+        },
+        IngestionStatusUpdateRequest: {
+          additionalProperties: false,
+          properties: {
+            status: {
+              description:
+                'Review status. IMPORTED is reserved for the future promotion workflow and cannot be set directly by this endpoint.',
+              enum: ['NEW', 'REVIEWED', 'SKIPPED'],
+              type: 'string',
+            },
           },
           required: ['status'],
           type: 'object',
@@ -770,6 +961,203 @@ export const openApiSpec = swaggerJsdoc({
           tags: ['API Keys'],
         },
       },
+      '/ingestion/documents': {
+        get: {
+          description:
+            'Lists staged ingestion candidates for authenticated reviewers. These records are source documents awaiting manual review and are not curated Policy records yet.',
+          parameters: [
+            { $ref: '#/components/parameters/Cursor' },
+            { $ref: '#/components/parameters/Limit' },
+            {
+              description: 'Text matched against source metadata and classifier hints.',
+              in: 'query',
+              name: 'q',
+              required: false,
+              schema: { minLength: 1, type: 'string' },
+            },
+            {
+              description: 'Restrict results to one ingestion run.',
+              in: 'query',
+              name: 'runId',
+              required: false,
+              schema: { format: 'uuid', type: 'string' },
+            },
+            {
+              description: 'Restrict results to one ingestion source.',
+              in: 'query',
+              name: 'sourceId',
+              required: false,
+              schema: { format: 'uuid', type: 'string' },
+            },
+            {
+              description: 'Review status to return.',
+              in: 'query',
+              name: 'status',
+              required: false,
+              schema: { $ref: '#/components/schemas/IngestionDocumentStatus' },
+            },
+          ],
+          responses: {
+            200: okJson('Ingestion documents returned.', {
+              additionalProperties: false,
+              properties: {
+                data: {
+                  items: { $ref: '#/components/schemas/IngestionDocument' },
+                  type: 'array',
+                },
+                pageInfo: { $ref: '#/components/schemas/PageInfo' },
+              },
+              required: ['data', 'pageInfo'],
+              type: 'object',
+            }),
+            400: validationErrorResponse,
+            401: unauthorizedResponse,
+            429: rateLimitResponse,
+            500: internalErrorResponse,
+          },
+          security: [{ bearerAuth: [] }],
+          summary: 'List ingestion documents',
+          tags: ['Ingestion'],
+        },
+      },
+      '/ingestion/documents/{id}': {
+        get: {
+          description:
+            'Fetches one staged ingestion document, including the original source payload for reviewer inspection.',
+          parameters: [{ $ref: '#/components/parameters/IngestionDocumentId' }],
+          responses: {
+            200: okJson('Ingestion document returned.', {
+              additionalProperties: false,
+              properties: {
+                data: { $ref: '#/components/schemas/IngestionDocument' },
+              },
+              required: ['data'],
+              type: 'object',
+            }),
+            400: validationErrorResponse,
+            401: unauthorizedResponse,
+            404: notFoundResponse,
+            429: rateLimitResponse,
+            500: internalErrorResponse,
+          },
+          security: [{ bearerAuth: [] }],
+          summary: 'Get ingestion document',
+          tags: ['Ingestion'],
+        },
+      },
+      '/ingestion/documents/{id}/status': {
+        patch: {
+          description:
+            'Updates reviewer status for one staged ingestion document. Promotion to a curated Policy record is handled by a separate workflow.',
+          parameters: [{ $ref: '#/components/parameters/IngestionDocumentId' }],
+          requestBody: {
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/IngestionStatusUpdateRequest' },
+              },
+            },
+            required: true,
+          },
+          responses: {
+            200: okJson('Ingestion document status updated.', {
+              additionalProperties: false,
+              properties: {
+                data: { $ref: '#/components/schemas/IngestionDocument' },
+              },
+              required: ['data'],
+              type: 'object',
+            }),
+            400: validationErrorResponse,
+            401: unauthorizedResponse,
+            404: notFoundResponse,
+            429: rateLimitResponse,
+            500: internalErrorResponse,
+          },
+          security: [{ bearerAuth: [] }],
+          summary: 'Update ingestion document status',
+          tags: ['Ingestion'],
+        },
+      },
+      '/ingestion/runs': {
+        get: {
+          description:
+            'Lists ingestion runs for authenticated reviewers with counts and source metadata.',
+          parameters: [
+            { $ref: '#/components/parameters/Cursor' },
+            { $ref: '#/components/parameters/Limit' },
+            {
+              description: 'Restrict results to one ingestion source.',
+              in: 'query',
+              name: 'sourceId',
+              required: false,
+              schema: { format: 'uuid', type: 'string' },
+            },
+            {
+              description: 'Run status to return.',
+              in: 'query',
+              name: 'status',
+              required: false,
+              schema: { $ref: '#/components/schemas/IngestionRunStatus' },
+            },
+          ],
+          responses: {
+            200: okJson('Ingestion runs returned.', {
+              additionalProperties: false,
+              properties: {
+                data: {
+                  items: { $ref: '#/components/schemas/IngestionRun' },
+                  type: 'array',
+                },
+                pageInfo: { $ref: '#/components/schemas/PageInfo' },
+              },
+              required: ['data', 'pageInfo'],
+              type: 'object',
+            }),
+            400: validationErrorResponse,
+            401: unauthorizedResponse,
+            429: rateLimitResponse,
+            500: internalErrorResponse,
+          },
+          security: [{ bearerAuth: [] }],
+          summary: 'List ingestion runs',
+          tags: ['Ingestion'],
+        },
+      },
+      '/ingestion/sources': {
+        get: {
+          description:
+            'Lists configured ingestion sources with document and run counts for authenticated reviewers.',
+          parameters: [
+            {
+              description: 'Source type to return.',
+              in: 'query',
+              name: 'sourceType',
+              required: false,
+              schema: { $ref: '#/components/schemas/IngestionSourceType' },
+            },
+          ],
+          responses: {
+            200: okJson('Ingestion sources returned.', {
+              additionalProperties: false,
+              properties: {
+                data: {
+                  items: { $ref: '#/components/schemas/IngestionSource' },
+                  type: 'array',
+                },
+              },
+              required: ['data'],
+              type: 'object',
+            }),
+            400: validationErrorResponse,
+            401: unauthorizedResponse,
+            429: rateLimitResponse,
+            500: internalErrorResponse,
+          },
+          security: [{ bearerAuth: [] }],
+          summary: 'List ingestion sources',
+          tags: ['Ingestion'],
+        },
+      },
       '/categories': {
         get: {
           description:
@@ -1196,6 +1584,7 @@ export const openApiSpec = swaggerJsdoc({
       { name: 'System' },
       { name: 'Auth' },
       { name: 'API Keys' },
+      { name: 'Ingestion' },
       { name: 'Policies' },
       { name: 'Timeline' },
       { name: 'Reference Data' },
