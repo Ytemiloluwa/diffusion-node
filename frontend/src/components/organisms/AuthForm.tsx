@@ -11,14 +11,12 @@ import { cn } from '@/lib/cn';
 type AuthMode = 'login' | 'register';
 
 type AuthFormFields = {
-  apiKeyLabel: string;
   confirmPassword: string;
   email: string;
   password: string;
 };
 
 const initialFields: AuthFormFields = {
-  apiKeyLabel: 'Local development key',
   confirmPassword: '',
   email: '',
   password: '',
@@ -72,7 +70,6 @@ export function AuthForm({ className, defaultMode = 'login' }: AuthFormProps) {
 
     const email = fields.email.trim();
     const password = fields.password;
-    const label = fields.apiKeyLabel.trim() || undefined;
 
     if (mode === 'register' && fields.confirmPassword !== password) {
       setValidationError('Passwords do not match.');
@@ -84,7 +81,7 @@ export function AuthForm({ className, defaultMode = 'login' }: AuthFormProps) {
         await register({ email, password });
       }
 
-      await login({ email, label, password });
+      await login({ email, password });
       router.replace('/');
     } catch {
       // Store state already carries the normalized API error for rendering.
@@ -192,17 +189,6 @@ export function AuthForm({ className, defaultMode = 'login' }: AuthFormProps) {
               value={fields.confirmPassword}
             />
           ) : null}
-
-          <Input
-            helperText="Label the API key by purpose, such as local development or CI."
-            label="API key label"
-            maxLength={80}
-            name="apiKeyLabel"
-            onChange={updateField('apiKeyLabel')}
-            required={mode === 'login'}
-            type="text"
-            value={fields.apiKeyLabel}
-          />
 
           {error || validationError ? (
             <div className="flex gap-2 rounded-control border border-danger-line bg-danger-soft px-3 py-2 text-sm text-danger">

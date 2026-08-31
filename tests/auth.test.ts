@@ -86,7 +86,7 @@ describe('auth controller', () => {
     } satisfies Partial<AppError>);
   });
 
-  it('issues JWT credentials and stores only a hashed API key', async () => {
+  it('issues JWT credentials without creating an API key', async () => {
     const passwordHash = await bcrypt.hash('password123', 4);
     mockPrisma.user.findUnique.mockResolvedValue({
       createdAt: new Date('2026-08-01T00:00:00.000Z'),
@@ -95,20 +95,13 @@ describe('auth controller', () => {
       passwordHash,
       role: Role.DEVELOPER,
     });
-    mockPrisma.apiKey.create.mockImplementation(async ({ data }) => ({
-      createdAt: new Date('2026-08-01T00:00:00.000Z'),
-      id: 'api-key-id',
-      label: data.label,
-    }));
 
-    const response = await issueToken('dev@example.com', 'password123', 'Local dev');
-    const createCall = mockPrisma.apiKey.create.mock.calls[0][0];
+    const response = await issueToken('dev@example.com', 'password123');
 
     expect(response.accessToken).toEqual(expect.any(String));
     expect(response.refreshToken).toEqual(expect.any(String));
-    expect(response.apiKey.key).toMatch(/^dn_/);
-    expect(createCall.data.key).not.toBe(response.apiKey.key);
-    expect(createCall.data.label).toBe('Local dev');
+    expect(response).not.toHaveProperty('apiKey');
+    expect(mockPrisma.apiKey.create).not.toHaveBeenCalled();
   });
 
   it('refreshes an access token from a valid refresh token', async () => {

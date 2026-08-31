@@ -155,11 +155,10 @@ export const openApiSpec = swaggerJsdoc({
           additionalProperties: false,
           properties: {
             accessToken: { type: 'string' },
-            apiKey: { $ref: '#/components/schemas/ApiKeyCredential' },
             refreshToken: { type: 'string' },
             user: { $ref: '#/components/schemas/User' },
           },
-          required: ['accessToken', 'apiKey', 'refreshToken', 'user'],
+          required: ['accessToken', 'refreshToken', 'user'],
           type: 'object',
         },
         Company: {
@@ -731,11 +730,6 @@ export const openApiSpec = swaggerJsdoc({
           additionalProperties: false,
           properties: {
             email: { format: 'email', type: 'string' },
-            label: {
-              maxLength: 80,
-              minLength: 1,
-              type: 'string',
-            },
             password: { minLength: 1, type: 'string', writeOnly: true },
           },
           required: ['email', 'password'],
@@ -877,7 +871,7 @@ export const openApiSpec = swaggerJsdoc({
       '/auth/token': {
         post: {
           description:
-            'Verifies email/password credentials, returns JWT credentials, and creates one raw API key. Store the API key immediately because it is not returned again.',
+            'Verifies email/password credentials and returns JWT credentials. API keys are managed separately through authenticated API key routes.',
           requestBody: {
             content: {
               'application/json': {
@@ -887,7 +881,7 @@ export const openApiSpec = swaggerJsdoc({
             required: true,
           },
           responses: {
-            200: okJson('JWT credentials and API key issued.', {
+            200: okJson('JWT credentials issued.', {
               additionalProperties: false,
               properties: {
                 data: { $ref: '#/components/schemas/AuthTokenResponse' },

@@ -2,7 +2,6 @@ import bcrypt from 'bcryptjs';
 import { Role } from '@prisma/client';
 
 import prisma from '../db/prisma';
-import { createApiKeyForUser } from '../services/apiKeyService';
 import { AppError } from '../utils/errors';
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../utils/jwt';
 
@@ -36,7 +35,7 @@ export const register = async (
   return serializeUser(user);
 };
 
-export const issueToken = async (email: string, password: string, label = 'Default API key') => {
+export const issueToken = async (email: string, password: string) => {
   const user = await prisma.user.findUnique({ where: { email } });
 
   if (!user) {
@@ -49,16 +48,8 @@ export const issueToken = async (email: string, password: string, label = 'Defau
     throw new AppError(401, 'INVALID_CREDENTIALS', 'Email or password is incorrect.');
   }
 
-  const { apiKey, rawApiKey } = await createApiKeyForUser(user.id, label);
-
   return {
     accessToken: signAccessToken(user),
-    apiKey: {
-      createdAt: apiKey.createdAt,
-      id: apiKey.id,
-      key: rawApiKey,
-      label: apiKey.label,
-    },
     refreshToken: signRefreshToken(user),
     user: serializeUser(user),
   };

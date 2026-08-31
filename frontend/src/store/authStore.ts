@@ -160,7 +160,7 @@ export const useAuthStore = create<AuthStore>()(
             accessToken: response.accessToken,
             error: null,
             isAuthenticated: true,
-            lastIssuedApiKey: response.apiKey,
+            lastIssuedApiKey: null,
             refreshToken: response.refreshToken,
             status: 'authenticated',
             user: response.user,

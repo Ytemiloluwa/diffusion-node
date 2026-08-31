@@ -14,7 +14,6 @@ export const registerBodySchema = z.object({
 
 export const tokenBodySchema = z.object({
   email: z.string().email(),
-  label: z.string().min(1).max(80).optional(),
   password: z.string().min(1),
 });
 
