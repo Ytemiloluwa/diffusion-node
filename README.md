@@ -26,6 +26,10 @@
     <a href="#testing">Testing</a> -
     <a href="#deployment">Deployment</a>
   </p>
+
+  <p>
+    <img src="./docs/assets/diffusion-node-auth-screen.png" alt="Diffusion Node authentication screen with animated policy intelligence globe" width="960" />
+  </p>
 </div>
 
 ## Overview
